@@ -23,15 +23,21 @@ struct ChatSession: Codable, Identifiable, Sendable, Hashable {
     /// `createdAt` is equal.
     var updatedAt: Date
 
+    /// User-editable chat name. `nil` (or empty after trim) means the UI
+    /// falls back to the timestamp `id`. Optional so existing on-disk
+    /// JSON that pre-dates this field decodes without migration.
+    var title: String?
+
     /// The same timeline `CaptionStream.captions` exposes. Screenshot
     /// payloads referenced by `Caption.imageFilename` live in a sibling
     /// `images/` folder on disk and are loaded via `ChatImageStore`.
     var captions: [Caption]
 
-    init(id: String, createdAt: Date = Date(), captions: [Caption] = []) {
+    init(id: String, createdAt: Date = Date(), title: String? = nil, captions: [Caption] = []) {
         self.id = id
         self.createdAt = createdAt
         self.updatedAt = createdAt
+        self.title = title
         self.captions = captions
     }
 
@@ -45,6 +51,20 @@ struct ChatSession: Codable, Identifiable, Sendable, Hashable {
         return f
     }()
 
-    /// String the picker / sidebar display: equal to the id.
-    var displayName: String { id }
+    /// String the picker / sidebar display: user-provided `title` if
+    /// present (after trimming whitespace), otherwise the timestamp id.
+    var displayName: String {
+        if let t = title?.trimmingCharacters(in: .whitespacesAndNewlines), !t.isEmpty {
+            return t
+        }
+        return id
+    }
+
+    /// True when the user hasn't yet given this chat a custom name — the
+    /// picker uses this to render the fallback timestamp with a muted /
+    /// monospaced style.
+    var hasCustomTitle: Bool {
+        guard let t = title?.trimmingCharacters(in: .whitespacesAndNewlines) else { return false }
+        return !t.isEmpty
+    }
 }

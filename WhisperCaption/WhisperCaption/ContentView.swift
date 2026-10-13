@@ -137,6 +137,9 @@ private struct ChatPicker: View {
     @Bindable var stream: CaptionStream
     let history: ChatHistoryStore
 
+    @State private var showRenameAlert: Bool = false
+    @State private var renameDraft: String = ""
+
     var body: some View {
         Menu {
             Button {
@@ -145,6 +148,21 @@ private struct ChatPicker: View {
                 Label("New chat", systemImage: "square.and.pencil")
             }
             .disabled(stream.state.isBusy)
+
+            Button {
+                beginRename()
+            } label: {
+                Label("Rename current chat…", systemImage: "pencil")
+            }
+
+            if stream.activeSession.hasCustomTitle {
+                Button(role: .destructive) {
+                    stream.renameActiveSession(to: nil)
+                    history.refreshIndex()
+                } label: {
+                    Label("Reset name to timestamp", systemImage: "arrow.uturn.backward")
+                }
+            }
 
             if !history.index.isEmpty {
                 Divider()
@@ -168,10 +186,17 @@ private struct ChatPicker: View {
                 Image(systemName: "bubble.left.and.bubble.right.fill")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(.secondary)
-                Text(stream.activeSession.displayName)
-                    .font(.system(.callout, design: .monospaced).weight(.medium))
-                    .lineLimit(1)
-                    .truncationMode(.middle)
+                if stream.activeSession.hasCustomTitle {
+                    Text(stream.activeSession.displayName)
+                        .font(.callout.weight(.medium))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                } else {
+                    Text(stream.activeSession.displayName)
+                        .font(.system(.callout, design: .monospaced).weight(.medium))
+                        .lineLimit(1)
+                        .truncationMode(.middle)
+                }
                 Image(systemName: "chevron.down")
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(.tertiary)
@@ -191,7 +216,34 @@ private struct ChatPicker: View {
         .menuStyle(.borderlessButton)
         .menuIndicator(.hidden)
         .fixedSize()
-        .help("Active chat. Open the menu to switch or start a new one.")
+        .help("Active chat. Open the menu to switch, rename or start a new one.")
+        .contextMenu {
+            Button("Rename current chat…") { beginRename() }
+            if stream.activeSession.hasCustomTitle {
+                Button(role: .destructive) {
+                    stream.renameActiveSession(to: nil)
+                    history.refreshIndex()
+                } label: {
+                    Text("Reset name to timestamp")
+                }
+            }
+        }
+        .alert("Rename chat", isPresented: $showRenameAlert) {
+            TextField("Chat name", text: $renameDraft)
+            Button("Save") {
+                let trimmed = renameDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+                stream.renameActiveSession(to: trimmed.isEmpty ? nil : trimmed)
+                history.refreshIndex()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("Give this chat a short, memorable name. Leave empty to restore the auto-generated timestamp id.")
+        }
+    }
+
+    private func beginRename() {
+        renameDraft = stream.activeSession.hasCustomTitle ? (stream.activeSession.title ?? "") : ""
+        showRenameAlert = true
     }
 }
 
@@ -782,6 +834,7 @@ private struct Bubble: View {
                         .font(.system(size: settings.bubbleFontSize))
                         .foregroundStyle(caption.isFinal ? .primary : .secondary)
                         .multilineTextAlignment(alignment == .leading ? .leading : .trailing)
+                        .textSelection(.enabled)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
                         .background(
@@ -1010,6 +1063,7 @@ private struct TranslationRow: View {
                 .font(.system(size: max(8, settings.bubbleFontSize - 1)))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(alignment == .leading ? .leading : .trailing)
+                .textSelection(.enabled)
         }
         .padding(.horizontal, 4)
         .frame(maxWidth: 420, alignment: alignment == .leading ? .leading : .trailing)
@@ -1150,11 +1204,24 @@ private struct BottomBar: View {
     let stream: CaptionStream
     @Environment(SettingsStore.self) private var settings
 
+    /// Short-lived "Copied!" badge replacing the button label after a
+    /// successful copy. Reset after ~1.3 s so the user clearly sees the
+    /// action landed in the clipboard.
+    @State private var justCopied: Bool = false
+    @State private var copyResetTask: Task<Void, Never>?
+
     private var engineLabel: String {
         switch settings.transcriptionEngine {
         case .whisper:    return "\(settings.whisperModel.displayName.lowercased()) · on-device"
         case .deepgram:   return "Deepgram Nova-3 · cloud"
         case .elevenlabs: return "ElevenLabs Scribe v2 · cloud"
+        }
+    }
+
+    private var hasAnyCaption: Bool {
+        stream.captions.contains { c in
+            if c.imageFilename != nil { return true }
+            return !c.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
         }
     }
 
@@ -1175,6 +1242,21 @@ private struct BottomBar: View {
                 .help("Save the current chat to history and start a fresh one.")
 
                 AutoScrollToggle()
+
+                Button {
+                    copyAllCaptions()
+                } label: {
+                    if justCopied {
+                        Label("Copied!", systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                    } else {
+                        Label("Copy all", systemImage: "doc.on.clipboard")
+                    }
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.regular)
+                .disabled(!hasAnyCaption)
+                .help("Copy every caption in this chat to the clipboard as plain transcript text (translations excluded).")
 
                 Spacer()
 
@@ -1208,6 +1290,58 @@ private struct BottomBar: View {
         case .whisper:    return "cpu"
         case .deepgram:   return "cloud"
         case .elevenlabs: return "cloud"
+        }
+    }
+
+    /// Build the plain-text snapshot and push it to the general
+    /// pasteboard. Rows are ordered by `startedAt` to match what the
+    /// user sees on screen. Each row carries a `HH:mm:ss` prefix plus a
+    /// source tag so "System vs. Me" is preserved when pasted into
+    /// notes. Screenshot bubbles are rendered as `[Screenshot: <label>]`
+    /// — the image itself is skipped (use the per-bubble "Copy image"
+    /// context action for that).
+    private func copyAllCaptions() {
+        let ordered = stream.captions.sorted { $0.startedAt < $1.startedAt }
+        guard !ordered.isEmpty else { return }
+
+        let timeFormatter: DateFormatter = {
+            let f = DateFormatter()
+            f.locale = Locale(identifier: "en_US_POSIX")
+            f.dateFormat = "HH:mm:ss"
+            return f
+        }()
+
+        var lines: [String] = []
+        for caption in ordered {
+            let stamp = timeFormatter.string(from: caption.startedAt)
+            let sourceTag: String = (caption.source == .microphone) ? "Me" : "System"
+            let text = caption.text.trimmingCharacters(in: .whitespacesAndNewlines)
+
+            if caption.imageFilename != nil {
+                let label = text.isEmpty ? "Screenshot" : "Screenshot: \(text)"
+                lines.append("[\(stamp)] \(sourceTag): [\(label)]")
+            } else if !text.isEmpty {
+                lines.append("[\(stamp)] \(sourceTag): \(text)")
+            }
+            // Translations are intentionally excluded — "Copy all" only
+            // snapshots the original transcript. Per-bubble right-click
+            // → "Copy translation" is still available for one-offs.
+        }
+
+        guard !lines.isEmpty else { return }
+
+        let joined = lines.joined(separator: "\n")
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(joined, forType: .string)
+
+        // Flash the "Copied!" state and reset after a short beat.
+        copyResetTask?.cancel()
+        justCopied = true
+        copyResetTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 1_300_000_000)
+            guard !Task.isCancelled else { return }
+            justCopied = false
         }
     }
 }

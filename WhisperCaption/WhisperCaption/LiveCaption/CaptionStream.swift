@@ -382,6 +382,26 @@ final class CaptionStream {
         imageStore = history.imageStore(forSessionID: sessionID)
     }
 
+    /// Updates the user-editable `title` on the currently-active chat
+    /// and persists it. Pass `nil` or whitespace to clear the custom
+    /// name and revert the picker to the timestamp id.
+    func renameActiveSession(to newTitle: String?) {
+        let trimmed = newTitle?.trimmingCharacters(in: .whitespacesAndNewlines)
+        activeSession.title = (trimmed?.isEmpty == false) ? trimmed : nil
+        flushNow()
+    }
+
+    /// Renames an arbitrary chat (active or historical). The active
+    /// chat is special-cased so the in-memory copy stays in sync with
+    /// the on-disk JSON.
+    func renameSession(id: String, to newTitle: String?) {
+        if id == activeSession.id {
+            renameActiveSession(to: newTitle)
+        } else {
+            history?.rename(id: id, to: newTitle)
+        }
+    }
+
     /// Insert a screenshot bubble into the System column. PNG bytes are
     /// written through `ChatImageStore`; the caption keeps the resulting
     /// filename for re-loading from disk.

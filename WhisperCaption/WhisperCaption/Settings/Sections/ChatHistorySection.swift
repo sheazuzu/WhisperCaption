@@ -19,6 +19,11 @@ struct ChatHistorySection: View {
     /// Delete-confirmation alert state.
     @State private var pendingDeleteIDs: Set<String>?
 
+    /// Rename-dialog state. When set, an alert prompts the user for a
+    /// new chat name applied to this id. `nil` ⇒ dialog hidden.
+    @State private var renameTargetID: String?
+    @State private var renameDraft: String = ""
+
     private let descriptor = SettingsCategoryID.chatHistory.descriptor
 
     private var singleSelectedID: String? {
@@ -78,11 +83,59 @@ struct ChatHistorySection: View {
             Button("Cancel", role: .cancel) {}
         } message: { ids in
             if ids.count == 1, let id = ids.first {
-                Text("Chat “\(id)” and all its screenshots will be deleted. This cannot be undone.")
+                Text("Chat “\(displayName(for: id))” and all its screenshots will be deleted. This cannot be undone.")
             } else {
                 Text("\(ids.count) chats will be deleted with all their screenshots. This cannot be undone.")
             }
         }
+        .alert(
+            "Rename chat",
+            isPresented: Binding(
+                get: { renameTargetID != nil },
+                set: { if !$0 { renameTargetID = nil } }
+            )
+        ) {
+            TextField("Chat name", text: $renameDraft)
+            Button("Save") { commitRename() }
+            Button("Reset to timestamp", role: .destructive) {
+                if let id = renameTargetID {
+                    stream.renameSession(id: id, to: nil)
+                    history.refreshIndex()
+                }
+                renameTargetID = nil
+            }
+            Button("Cancel", role: .cancel) { renameTargetID = nil }
+        } message: {
+            Text("Give this chat a short, memorable name. Leave empty or tap “Reset to timestamp” to restore the auto-generated id.")
+        }
+    }
+
+    /// Lookup for alert / message strings — prefers the custom title,
+    /// falls back to the raw id when the chat has none.
+    private func displayName(for id: String) -> String {
+        if id == stream.activeSession.id {
+            return stream.activeSession.displayName
+        }
+        return history.index.first(where: { $0.id == id })?.displayName ?? id
+    }
+
+    private func beginRename(id: String) {
+        renameTargetID = id
+        if id == stream.activeSession.id {
+            renameDraft = stream.activeSession.hasCustomTitle ? (stream.activeSession.title ?? "") : ""
+        } else if let meta = history.index.first(where: { $0.id == id }) {
+            renameDraft = meta.hasCustomTitle ? (meta.title ?? "") : ""
+        } else {
+            renameDraft = ""
+        }
+    }
+
+    private func commitRename() {
+        guard let id = renameTargetID else { return }
+        let trimmed = renameDraft.trimmingCharacters(in: .whitespacesAndNewlines)
+        stream.renameSession(id: id, to: trimmed.isEmpty ? nil : trimmed)
+        history.refreshIndex()
+        renameTargetID = nil
     }
 
     private func alertTitle(for ids: Set<String>?) -> String {
@@ -152,6 +205,9 @@ struct ChatHistorySection: View {
                             Button("Make active") {
                                 stream.activate(sessionID: meta.id)
                                 selectedIDs = [meta.id]
+                            }
+                            Button("Rename…") {
+                                beginRename(id: meta.id)
                             }
                             Button(
                                 selectedIDs.contains(meta.id) && selectedIDs.count > 1
@@ -254,10 +310,28 @@ struct ChatHistorySection: View {
 
     private func detailHeader(id: String, captions: [Caption]) -> some View {
         let isActive = (id == stream.activeSession.id)
+        let name = displayName(for: id)
+        let hasCustom = name != id
         return HStack(spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
-                Text(id)
-                    .font(.system(.headline, design: .monospaced))
+                HStack(spacing: 6) {
+                    if hasCustom {
+                        Text(name)
+                            .font(.headline)
+                    } else {
+                        Text(name)
+                            .font(.system(.headline, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                    }
+                    Button {
+                        beginRename(id: id)
+                    } label: {
+                        Image(systemName: "pencil")
+                            .font(.caption)
+                    }
+                    .buttonStyle(.borderless)
+                    .help("Rename this chat")
+                }
                 HStack(spacing: 6) {
                     if isActive {
                         Text("active")
@@ -266,6 +340,11 @@ struct ChatHistorySection: View {
                             .padding(.horizontal, 6)
                             .padding(.vertical, 1)
                             .background(Capsule().fill(Color.accentColor))
+                    }
+                    if hasCustom {
+                        Text(id)
+                            .font(.system(.caption2, design: .monospaced))
+                            .foregroundStyle(.tertiary)
                     }
                     Text("\(captions.count) messages")
                         .font(.caption)
@@ -394,14 +473,27 @@ private struct SessionRow: View {
         HStack(spacing: 8) {
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 6) {
-                    Text(meta.displayName)
-                        .font(.system(.callout, design: .monospaced))
-                        .lineLimit(1)
+                    if meta.hasCustomTitle {
+                        Text(meta.displayName)
+                            .font(.callout.weight(.medium))
+                            .lineLimit(1)
+                    } else {
+                        Text(meta.displayName)
+                            .font(.system(.callout, design: .monospaced))
+                            .foregroundStyle(.secondary)
+                            .lineLimit(1)
+                    }
                     if isActive {
                         Circle()
                             .fill(Color.accentColor)
                             .frame(width: 6, height: 6)
                     }
+                }
+                if meta.hasCustomTitle {
+                    Text(meta.id)
+                        .font(.system(.caption2, design: .monospaced))
+                        .foregroundStyle(.tertiary)
+                        .lineLimit(1)
                 }
                 HStack(spacing: 8) {
                     Label("\(captionCount)", systemImage: "text.bubble")

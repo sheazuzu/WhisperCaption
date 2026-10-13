@@ -29,8 +29,20 @@ final class ChatHistoryStore {
         let captionCount: Int
         let screenshotCount: Int
         let onDiskBytes: Int64
+        /// User-provided chat name. `nil`/empty ⇒ fall back to `id`.
+        let title: String?
 
-        var displayName: String { id }
+        var displayName: String {
+            if let t = title?.trimmingCharacters(in: .whitespacesAndNewlines), !t.isEmpty {
+                return t
+            }
+            return id
+        }
+
+        var hasCustomTitle: Bool {
+            guard let t = title?.trimmingCharacters(in: .whitespacesAndNewlines) else { return false }
+            return !t.isEmpty
+        }
     }
 
     /// Sorted newest-first. SwiftUI observes this — mutate only on
@@ -121,7 +133,8 @@ final class ChatHistoryStore {
                 updatedAt: session.updatedAt,
                 captionCount: session.captions.count,
                 screenshotCount: pngCount,
-                onDiskBytes: jsonSize + imgSize
+                onDiskBytes: jsonSize + imgSize,
+                title: session.title
             ))
         }
         index = metas.sorted { $0.createdAt > $1.createdAt }
@@ -164,6 +177,23 @@ final class ChatHistoryStore {
         let folder = sessionFolderURL(for: id)
         try? FileManager.default.removeItem(at: folder)
         refreshIndex()
+    }
+
+    /// Updates the user-editable `title` on the session with the given
+    /// id, re-writes `session.json` and refreshes the index so the UI
+    /// picks up the new name immediately. The on-disk folder (= the id)
+    /// is intentionally left untouched so screenshot references and the
+    /// user's bookmarks keep working.
+    ///
+    /// Passing `nil` or a whitespace-only string clears the custom name
+    /// and reverts the display to the timestamp id.
+    @discardableResult
+    func rename(id: String, to newTitle: String?) -> Bool {
+        guard var session = load(id: id) else { return false }
+        let trimmed = newTitle?.trimmingCharacters(in: .whitespacesAndNewlines)
+        session.title = (trimmed?.isEmpty == false) ? trimmed : nil
+        save(session)
+        return true
     }
 
     // MARK: - IDs

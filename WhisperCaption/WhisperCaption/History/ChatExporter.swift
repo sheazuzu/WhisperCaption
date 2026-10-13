@@ -156,7 +156,10 @@ enum ChatExporter {
         var out = ""
 
         // Header
-        out += "# \(session.id)\n\n"
+        out += "# \(session.displayName)\n\n"
+        if session.hasCustomTitle {
+            out += "**ID:** `\(session.id)`  \n"
+        }
         out += "**Created:** \(formatLong(session.createdAt))  \n"
         out += "**Updated:** \(formatLong(session.updatedAt))  \n"
         out += "**Messages:** \(session.captions.count)\n\n"

@@ -1,6 +1,7 @@
 import AppKit
 import Foundation
 import OSLog
+import QuartzCore
 
 /// Coordinator: spins up two capture sources, two `TranscriptionEngine`s,
 /// and merges their caption updates into a single observable timeline the
@@ -83,6 +84,25 @@ final class CaptionStream {
     private var elapsedTask: Task<Void, Never>?
     private var bubbleSilenceTask: Task<Void, Never>?
 
+    /// Timestamp (seconds since boot via `CACurrentMediaTime`) of the last
+    /// system-audio sample whose RMS crossed `micDuckRMSThreshold`. Read
+    /// by the mic pump: while this timestamp is within
+    /// `micDuckHoldOff` of now AND the user has enabled the speakerphone
+    /// guard, mic samples are dropped instead of being fed to Whisper.
+    /// Default 0 means "system has never played anything loud yet".
+    private var lastSystemAudioTime: CFTimeInterval = 0
+
+    /// System-audio RMS at or above this level counts as "actively
+    /// playing". 0.01 corresponds to roughly -40 dBFS which is a quiet
+    /// voice over a VoIP call; below that we treat the system as silent
+    /// (background hum from the output device is typically < 0.001).
+    private let micDuckRMSThreshold: Float = 0.01
+
+    /// Seconds to keep the mic muted after the last loud system sample.
+    /// 250 ms covers the trailing tail of a word reverberating out of
+    /// the speaker without clipping the start of the user's reply.
+    private let micDuckHoldOff: CFTimeInterval = 0.25
+
     /// Normaliser between engine output and `applyCaption`. Reset on stop.
     private let bubbleSplitter = BubbleSplitter()
 
@@ -142,6 +162,9 @@ final class CaptionStream {
         // Reset the unused side of the UI to a clean zero so the meter
         // doesn't show a stale level from a previous session.
         if !captureMic { micLevel = 0 }
+        // Reset the speaker-bleed gate so the mic doesn't start muted
+        // based on a timestamp recorded during a previous Start cycle.
+        lastSystemAudioTime = 0
 
         // 1) Permissions
         state = .checkingPermissions
@@ -622,7 +645,29 @@ final class CaptionStream {
                 for await event in mic.events {
                     switch event {
                     case .samples(let s, let rms):
+                        // Always update the VU meter so the user can
+                        // see the mic is physically listening — even
+                        // when samples are about to be dropped by the
+                        // speakerphone guard below.
                         self.updateMicLevel(rms)
+
+                        // Speakerphone bleed guard. If the user is on
+                        // the loudspeaker, the system-audio tap just
+                        // caught something, and we feed these mic
+                        // samples to Whisper, the same sentence would
+                        // be transcribed twice (once from the real
+                        // system tap, once from the mic picking up the
+                        // speaker). While `lastSystemAudioTime` is
+                        // within `micDuckHoldOff` of now, skip the
+                        // ingest. Harmless with headphones because the
+                        // mic never catches speaker output and the
+                        // system tap RMS crossings alone don't correlate
+                        // with speech leaking into the mic — but the
+                        // conservative behaviour there is "mic pauses
+                        // briefly during loud system audio" which the
+                        // user can disable in Settings → Privacy.
+                        if self.shouldSuppressMicSample() { continue }
+
                         await micEngine.ingest(s)
                     case .error(let e):
                         self.flagError("Microphone error: \(e)")
@@ -646,6 +691,14 @@ final class CaptionStream {
                 switch event {
                 case .samples(let s, let rms):
                     self.updateSystemLevel(rms)
+                    // Mark the system as "actively playing" so the mic
+                    // pump drops its concurrent samples. We stamp with
+                    // CACurrentMediaTime (monotonic, not affected by
+                    // wall-clock jumps) and let the mic side decide
+                    // the hold-off window.
+                    if rms >= self.micDuckRMSThreshold {
+                        self.lastSystemAudioTime = CACurrentMediaTime()
+                    }
                     await systemEngine.ingest(s)
                 case .error(let e):
                     self.flagError("System audio error: \(e)")
@@ -665,6 +718,18 @@ final class CaptionStream {
         }
 
         startBubbleSilenceTask()
+    }
+
+    /// True when the mic pump should drop its current sample instead of
+    /// forwarding to Whisper. Returns false when the user has disabled
+    /// the speakerphone guard or when system audio hasn't been loud
+    /// recently. Reads `CACurrentMediaTime` once per sample — cheap
+    /// enough to call on every tap buffer (~43 Hz at 48 kHz, 1024-frame
+    /// buffers).
+    private func shouldSuppressMicSample() -> Bool {
+        guard settingsStore?.suppressMicWhileSystemPlays ?? true else { return false }
+        guard lastSystemAudioTime > 0 else { return false }
+        return (CACurrentMediaTime() - lastSystemAudioTime) < micDuckHoldOff
     }
 
     private func currentSplitterConfig() -> BubbleSplitter.Config {

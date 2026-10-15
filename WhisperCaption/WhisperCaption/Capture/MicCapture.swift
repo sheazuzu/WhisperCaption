@@ -56,7 +56,18 @@ nonisolated final class MicCapture: @unchecked Sendable {
             let input = engine.inputNode
 
             // Pin the input device to the user's choice if one was set.
-            // If `preferredInputUID` is nil, AVAudioEngine uses the system default.
+            // If `preferredInputUID` is nil (follow system default), we do
+            // NOT call AudioUnitSetProperty — letting AVAudioEngine pick
+            // the current default is important for headset switching: when
+            // the user plugs in wired earbuds or connects AirPods, macOS
+            // reroutes the default input and we automatically follow,
+            // instead of being stuck on whatever device was default at
+            // app launch.
+            //
+            // When the user DID pick a specific device but that device is
+            // no longer present (headset unplugged, Bluetooth disconnected),
+            // we fall back to the system default instead of failing — the
+            // VU would otherwise sit dead at zero with no explanation.
             if let uid = preferredInputUID, !uid.isEmpty {
                 if let deviceID = AudioDevices.deviceID(forUID: uid, direction: .input),
                    let inputAU = input.audioUnit {
@@ -70,10 +81,37 @@ nonisolated final class MicCapture: @unchecked Sendable {
                         UInt32(MemoryLayout<AudioDeviceID>.size)
                     )
                     if err != noErr {
-                        log.error("could not set mic device to \(uid, privacy: .public): \(err)")
+                        log.error("could not set mic device to \(uid, privacy: .public) (err=\(err)) — falling back to system default")
                     } else {
-                        log.info("mic pinned to user-selected device: \(uid, privacy: .public)")
+                        let transport = AudioDevices.transportType(for: deviceID)
+                        let kind: String
+                        if AudioDevices.isBluetooth(transport) {
+                            kind = "bluetooth"
+                        } else if transport == kAudioDeviceTransportTypeBuiltIn {
+                            kind = "builtin"
+                        } else if transport == kAudioDeviceTransportTypeUSB {
+                            kind = "usb"
+                        } else {
+                            kind = "transport=\(transport)"
+                        }
+                        log.info("mic pinned to user-selected device: \(uid, privacy: .public) [\(kind, privacy: .public)]")
                     }
+                } else {
+                    // User's remembered pick is gone (unplugged / disconnected).
+                    // Leave `preferredInputUID` cached so the next start can
+                    // re-apply it if the device comes back, but let this run
+                    // use whatever macOS currently considers default.
+                    log.info("mic preferred device \(uid, privacy: .public) not present — using system default")
+                }
+            } else {
+                // No pinned device → follow system default. Log which device
+                // that resolves to so unexpected sources (e.g. a virtual
+                // audio driver) are visible in the logs.
+                if let defID = AudioDevices.defaultDeviceID(for: .input) {
+                    let transport = AudioDevices.transportType(for: defID)
+                    log.info("mic following system default (device id=\(defID), transport=\(transport))")
+                } else {
+                    log.info("mic following system default (no default resolved)")
                 }
             }
 

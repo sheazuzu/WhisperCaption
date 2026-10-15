@@ -35,6 +35,27 @@ SRC_APP="$PRODUCT_DIR/WhisperCaption.app"
 TARGET_NAME="WhisperCaption-${SUFFIX}.app"
 DEST_APP="/Applications/$TARGET_NAME"
 
+# Clean up the un-suffixed /Applications/WhisperCaption.app if it exists.
+# It shares the same CFBundleIdentifier as the suffixed build, so TCC
+# (macOS privacy DB) sees two different cdhashes for the same bundle id
+# and gets confused — the user ends up granting Screen Recording to the
+# "wrong" row in System Settings and SCK keeps returning -3801. Moving
+# the stale copy to Trash removes the ambiguity.
+LEGACY_APP="/Applications/WhisperCaption.app"
+if [[ -d "$LEGACY_APP" && "$DEST_APP" != "$LEGACY_APP" ]]; then
+  echo "==> Found legacy install at $LEGACY_APP"
+  echo "    (same bundle id as the suffixed build — causes TCC conflicts)"
+  echo "    Moving it to Trash …"
+  # Quit it first in case it's running.
+  osascript -e 'tell application "WhisperCaption" to quit' 2>/dev/null || true
+  sleep 1
+  # Use `mv` into ~/.Trash with a timestamp to avoid name collisions.
+  TRASH_NAME="WhisperCaption-legacy-$(date +%Y%m%d-%H%M%S).app"
+  mv "$LEGACY_APP" "$HOME/.Trash/$TRASH_NAME" 2>/dev/null || rm -rf "$LEGACY_APP"
+  echo "    Done (moved to ~/.Trash/$TRASH_NAME)."
+  echo
+fi
+
 echo "==> Building Release ($CONFIG) …"
 xcodebuild \
   -project "$PROJECT" \
@@ -67,9 +88,26 @@ rm -rf "$DEST_APP"
 cp -R "$SRC_APP" "$DEST_APP"
 
 # Re-sign ad-hoc after the rename so Gatekeeper is happy and the embedded
-# frameworks still validate. Non-fatal if codesign isn't available.
-echo "==> Re-signing (ad-hoc) …"
-codesign --force --deep --sign - "$DEST_APP" >/dev/null 2>&1 || true
+# frameworks still validate. We pin --identifier to the real bundle id so
+# TCC (Privacy database) keeps matching this app across rebuilds; without
+# that pin every rebuild gets a fresh cdhash and the user has to re-grant
+# Screen Recording / Microphone every time.
+echo "==> Re-signing (ad-hoc, stable identifier) …"
+BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$DEST_APP/Contents/Info.plist" 2>/dev/null || echo 'albond.WhisperCaption')"
+
+# Sign nested bundles first (frameworks + helper tools) — codesign refuses
+# to re-sign a container whose contents are unsigned/stale.
+find "$DEST_APP/Contents/Frameworks" -type d \( -name '*.framework' -o -name '*.bundle' -o -name '*.dylib' \) -prune -print 2>/dev/null \
+  | while read -r nested; do
+      codesign --force --sign - --timestamp=none "$nested" >/dev/null 2>&1 || true
+    done
+
+# Finally the main .app bundle with a pinned bundle identifier.
+codesign --force --sign - \
+  --identifier "$BUNDLE_ID" \
+  --preserve-metadata=entitlements,requirements \
+  --timestamp=none \
+  "$DEST_APP" >/dev/null 2>&1 || true
 
 echo "==> Launching …"
 open "$DEST_APP"
@@ -77,5 +115,22 @@ open "$DEST_APP"
 echo
 echo "Done."
 echo "  App:        $DEST_APP"
+echo "  Bundle ID:  $BUNDLE_ID"
 echo "  Launch via: Spotlight / Launchpad → \"${TARGET_NAME%.app}\""
 echo "  Rebuild:    ./scripts/install-local.sh ${SUFFIX}"
+echo
+echo "If macOS keeps asking for Screen Recording / Microphone even after"
+echo "you grant them, the TCC database has stale entries from an older"
+echo "build. Run this once, then relaunch the app and grant again:"
+echo
+echo "    ./scripts/reset-permissions.sh"
+echo
+echo "First-launch tip (SCStreamError -3801 'The user declined TCCs'):"
+echo "  macOS writes new TCC entries lazily — the FIRST ScreenCaptureKit"
+echo "  call after you grant permission almost always fails with -3801."
+echo "  To get past it:"
+echo "    1. Launch the app, press Start, and grant Microphone +"
+echo "       Screen Recording when prompted."
+echo "    2. Fully quit the app (⌘Q, not just close the window)."
+echo "    3. Launch it again — permission now takes effect and Start"
+echo "       works on the first try."

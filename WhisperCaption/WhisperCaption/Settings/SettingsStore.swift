@@ -188,6 +188,21 @@ final class SettingsStore {
         }
     }
 
+    /// Speaker-bleed guard. When true, microphone samples are dropped
+    /// (not fed to the Whisper engine) while system audio is actively
+    /// playing — stops the "same sentence transcribed twice" problem
+    /// when the user is on speakerphone and the loudspeaker's output
+    /// gets picked up by the microphone. Harmless with headphones
+    /// (system audio doesn't leak into the mic, so there's nothing to
+    /// gate on). The VU meter still animates so the user can see the
+    /// mic is physically listening — only the transcription pipeline
+    /// is paused.
+    var suppressMicWhileSystemPlays: Bool {
+        didSet {
+            UserDefaults.standard.set(suppressMicWhileSystemPlays, forKey: Keys.suppressMicWhileSystemPlays)
+        }
+    }
+
     /// Whether the Main HUD's chat list auto-scrolls to the latest caption
     /// while a stream is running. Off lets the user freely scroll history
     /// without the next partial yanking the viewport back down.
@@ -574,6 +589,15 @@ final class SettingsStore {
             self.captureMicrophone = defaults.bool(forKey: Keys.captureMicrophone)
         }
 
+        // Default ON — most users who hit this flag are on speakerphone
+        // and want the dedup. Headphone users won't notice it since the
+        // system-audio RMS gate stays low on their mic path.
+        if defaults.object(forKey: Keys.suppressMicWhileSystemPlays) == nil {
+            self.suppressMicWhileSystemPlays = true
+        } else {
+            self.suppressMicWhileSystemPlays = defaults.bool(forKey: Keys.suppressMicWhileSystemPlays)
+        }
+
         if defaults.object(forKey: Keys.autoScrollMainHUD) == nil {
             self.autoScrollMainHUD = true
         } else {
@@ -720,6 +744,7 @@ final class SettingsStore {
     private enum Keys {
         static let windowsHiddenFromCapture = "WhisperCaption.settings.windowsHiddenFromCapture"
         static let captureMicrophone        = "WhisperCaption.settings.captureMicrophone"
+        static let suppressMicWhileSystemPlays = "WhisperCaption.settings.suppressMicWhileSystemPlays"
         static let autoScrollMainHUD        = "WhisperCaption.settings.autoScrollMainHUD"
         static let mainHUDVisible           = "WhisperCaption.settings.mainHUDVisible"
         static let ccHUDVisible             = "WhisperCaption.settings.ccHUDVisible"

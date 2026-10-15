@@ -27,6 +27,20 @@ struct PrivacySection: View {
             }
 
             SettingsCard(
+                title: "Speakerphone mode",
+                footer: "On speaker, the loudspeaker's output gets picked up by the microphone and the same sentence gets transcribed twice — once from the real system-audio tap, once from the mic. This toggle pauses the mic pipeline while system audio is actively playing. The VU meter still animates so you can tell the mic is physically listening. Harmless with headphones."
+            ) {
+                Toggle(isOn: $store.suppressMicWhileSystemPlays) {
+                    SettingsRowLabel(
+                        title: "Suppress mic while system audio is playing",
+                        subtitle: "Prevents double transcription when using the speaker instead of headphones."
+                    )
+                }
+                .toggleStyle(.switch)
+                .disabled(!store.captureMicrophone)
+            }
+
+            SettingsCard(
                 title: "Screen capture",
                 footer: "Single switch that applies to ALL windows. Compositor-level filtering — windows are not rendered as black to other apps, they're not there at all."
             ) {

@@ -3,16 +3,10 @@
 # MeetAndNote 本地卸载脚本（与 install-local.sh 对称）
 #
 # 用法：
-#   ./scripts/uninstall-local.sh                   # 默认仅删除 /Applications 下带默认后缀的 app
-#   ./scripts/uninstall-local.sh <suffix>          # 指定后缀：如 dev 则卸载 MeetAndNote-dev.app
-#   ./scripts/uninstall-local.sh <suffix> --build  # 同时清理项目下的 build-local/ 构建缓存
-#   ./scripts/uninstall-local.sh <suffix> --data   # 同时清理用户数据（聊天历史 + 设置 + 日志）
-#   ./scripts/uninstall-local.sh <suffix> --all    # 全清（app + 构建缓存 + 用户数据 + DerivedData）
-#
-# 示例：
-#   ./scripts/uninstall-local.sh                   # 只删 /Applications/MeetAndNote-shea.app
-#   ./scripts/uninstall-local.sh shea --build      # 顺带清 build-local/
-#   ./scripts/uninstall-local.sh shea --all        # 彻底清干净（会二次确认）
+#   ./scripts/uninstall-local.sh            # 仅删除 /Applications/MeetAndNote 2.0.app
+#   ./scripts/uninstall-local.sh --build    # 同时清理项目下的 build-local/ 构建缓存
+#   ./scripts/uninstall-local.sh --data     # 同时清理用户数据（聊天历史 + 设置 + 日志）
+#   ./scripts/uninstall-local.sh --all      # 全清（app + 构建缓存 + 用户数据 + DerivedData）
 #
 # 注意：
 #   - 删除 app 本身只会移除启动入口，聊天历史与设置仍然保留，下次安装自动恢复。
@@ -23,8 +17,6 @@
 set -euo pipefail
 
 # ---- 解析参数 ----
-# 第一个非选项参数视为后缀，默认 "shea"（与 install-local.sh 保持一致）
-SUFFIX="shea"
 CLEAN_BUILD=0   # 是否清理项目构建缓存
 CLEAN_DATA=0    # 是否清理用户数据（聊天历史 + 偏好设置）
 CLEAN_DERIVED=0 # 是否清理 Xcode DerivedData
@@ -35,15 +27,13 @@ for arg in "$@"; do
     --data)    CLEAN_DATA=1 ;;
     --all)     CLEAN_BUILD=1; CLEAN_DATA=1; CLEAN_DERIVED=1 ;;
     --help|-h)
-      sed -n '2,25p' "$0"
+      sed -n '2,16p' "$0"
       exit 0
       ;;
-    -*)
-      echo "未知参数：$arg" >&2
-      exit 2
-      ;;
     *)
-      SUFFIX="$arg"
+      echo "未知参数：$arg" >&2
+      echo "可用参数：--build | --data | --all | --help" >&2
+      exit 2
       ;;
   esac
 done
@@ -52,9 +42,10 @@ done
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
 
-TARGET_NAME="MeetAndNote-${SUFFIX}.app"
+# App 文件名与 install-local.sh 保持一致：带空格、带版本号
+TARGET_NAME="MeetAndNote 2.0.app"
 TARGET_APP="/Applications/$TARGET_NAME"
-APP_DISPLAY_NAME="${TARGET_NAME%.app}"
+APP_DISPLAY_NAME="${TARGET_NAME%.app}"   # "MeetAndNote 2.0"
 
 BUILD_DIR="$ROOT/build-local"
 # Bundle ID 来自 Xcode 项目配置，用于定位用户偏好和缓存
@@ -92,7 +83,7 @@ fi
 # ---- 1. 先退出正在运行的实例，避免「文件被占用」问题 ----
 echo "==> 退出正在运行的 $APP_DISPLAY_NAME …"
 osascript -e "tell application \"$APP_DISPLAY_NAME\" to quit" 2>/dev/null || true
-# 顺带退出无后缀的原版，防止并发冲突
+# 顺带退出无版本号的原版，防止并发冲突
 osascript -e 'tell application "MeetAndNote" to quit' 2>/dev/null || true
 sleep 1
 

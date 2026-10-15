@@ -1,26 +1,26 @@
 #!/usr/bin/env bash
 #
-# Local-only install for the current user. Builds Release, renames the
-# .app bundle so you can tell it apart from any upstream copy, and drops
-# it into /Applications so Launchpad / Spotlight / Dock pick it up like
-# a normal Mac app.
+# Local-only install for the current user. Builds Release and drops a
+# fully-signed .app bundle into /Applications so Launchpad / Spotlight /
+# Dock pick it up like any other Mac app.
+#
+# The installed bundle is called "MeetAndNote 2.0.app" — the version
+# number is baked into the file name so Finder makes it obvious which
+# build is live. Launchpad/Spotlight still show "MeetAndNote 2.0" because
+# that's the CFBundleDisplayName in Info.plist.
 #
 # IMPORTANT — the on-disk chat history folder (~/Library/Application
-# Support/MeetAndNote/) is tied to the app's bundle identifier, NOT
-# its file name. We rename the .app wrapper only; CFBundleIdentifier and
-# PRODUCT_NAME stay untouched, so your existing chats keep working.
+# Support/MeetAndNote/) is tied to the app's bundle identifier
+# (com.sheazuzu.MeetAndNote), NOT its file name. Renaming the wrapper is
+# cosmetic; your existing chats stay put across rebuilds.
 #
 # Usage:
-#   ./scripts/install-local.sh                 # default suffix "shea"
-#   ./scripts/install-local.sh <suffix>        # custom suffix
+#   ./scripts/install-local.sh
 #
-# Examples:
-#   ./scripts/install-local.sh                 # ⇒ /Applications/MeetAndNote-shea.app
-#   ./scripts/install-local.sh dev             # ⇒ /Applications/MeetAndNote-dev.app
+# No arguments. If you want to install multiple variants side by side,
+# edit TARGET_NAME below.
 
 set -euo pipefail
-
-SUFFIX="${1:-shea}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
@@ -32,29 +32,29 @@ BUILD_DIR="$ROOT/build-local"
 PRODUCT_DIR="$BUILD_DIR/Build/Products/$CONFIG"
 SRC_APP="$PRODUCT_DIR/MeetAndNote.app"
 
-TARGET_NAME="MeetAndNote-${SUFFIX}.app"
+# Final name shown in Finder. Spaces are fine — macOS handles them,
+# and every shell command below quotes paths accordingly.
+TARGET_NAME="MeetAndNote 2.0.app"
 DEST_APP="/Applications/$TARGET_NAME"
+APP_DISPLAY_NAME="${TARGET_NAME%.app}"   # "MeetAndNote 2.0"
 
-# Clean up the un-suffixed /Applications/MeetAndNote.app if it exists.
-# It shares the same CFBundleIdentifier as the suffixed build, so TCC
-# (macOS privacy DB) sees two different cdhashes for the same bundle id
-# and gets confused — the user ends up granting Screen Recording to the
-# "wrong" row in System Settings and SCK keeps returning -3801. Moving
-# the stale copy to Trash removes the ambiguity.
+# Clean up a stale /Applications/MeetAndNote.app (un-versioned) if it
+# somehow got installed by a previous run or by Xcode's archive export.
+# It shares the same CFBundleIdentifier as this build, so TCC
+# (macOS privacy DB) would see two different cdhashes for the same
+# bundle id and the user ends up granting Screen Recording to the
+# "wrong" row in System Settings — SCK then keeps returning -3801.
 #
 # Note: pre-rebrand /Applications/WhisperCaption.app installs use a
 # different bundle id (albond.WhisperCaption vs. com.sheazuzu.MeetAndNote),
-# so they coexist fine with this one. If you want to remove them too,
-# delete them manually.
+# so they coexist fine. Delete them manually if you want them gone.
 LEGACY_APP="/Applications/MeetAndNote.app"
 if [[ -d "$LEGACY_APP" && "$DEST_APP" != "$LEGACY_APP" ]]; then
   echo "==> Found legacy install at $LEGACY_APP"
-  echo "    (same bundle id as the suffixed build — causes TCC conflicts)"
+  echo "    (same bundle id as this build — causes TCC conflicts)"
   echo "    Moving it to Trash …"
-  # Quit it first in case it's running.
   osascript -e 'tell application "MeetAndNote" to quit' 2>/dev/null || true
   sleep 1
-  # Use `mv` into ~/.Trash with a timestamp to avoid name collisions.
   TRASH_NAME="MeetAndNote-legacy-$(date +%Y%m%d-%H%M%S).app"
   mv "$LEGACY_APP" "$HOME/.Trash/$TRASH_NAME" 2>/dev/null || rm -rf "$LEGACY_APP"
   echo "    Done (moved to ~/.Trash/$TRASH_NAME)."
@@ -80,16 +80,18 @@ if [[ ! -d "$SRC_APP" ]]; then
 fi
 
 echo
-echo "==> Quitting any running copy of $TARGET_NAME …"
-osascript -e "tell application \"${TARGET_NAME%.app}\" to quit" 2>/dev/null || true
-# Also quit the vanilla name in case we're transitioning from an unsuffixed install.
+echo "==> Quitting any running copy of \"$APP_DISPLAY_NAME\" …"
+osascript -e "tell application \"$APP_DISPLAY_NAME\" to quit" 2>/dev/null || true
+# Also quit the vanilla name in case we're transitioning from an older install.
 osascript -e 'tell application "MeetAndNote" to quit' 2>/dev/null || true
 sleep 1
 
-echo "==> Installing to $DEST_APP …"
+echo "==> Installing to \"$DEST_APP\" …"
 rm -rf "$DEST_APP"
 # Copy under the new name. macOS uses the .app wrapper's filename as the
-# display name whenever CFBundleDisplayName / CFBundleName aren't set.
+# display name whenever CFBundleDisplayName / CFBundleName aren't set —
+# but we DO set CFBundleDisplayName in the pbxproj, so Launchpad shows
+# "MeetAndNote 2.0" regardless of the wrapper name.
 cp -R "$SRC_APP" "$DEST_APP"
 
 # Re-sign ad-hoc after the rename so Gatekeeper is happy and the embedded
@@ -121,8 +123,8 @@ echo
 echo "Done."
 echo "  App:        $DEST_APP"
 echo "  Bundle ID:  $BUNDLE_ID"
-echo "  Launch via: Spotlight / Launchpad → \"${TARGET_NAME%.app}\""
-echo "  Rebuild:    ./scripts/install-local.sh ${SUFFIX}"
+echo "  Launch via: Spotlight / Launchpad → \"$APP_DISPLAY_NAME\""
+echo "  Rebuild:    ./scripts/install-local.sh"
 echo
 echo "If macOS keeps asking for Screen Recording / Microphone even after"
 echo "you grant them, the TCC database has stale entries from an older"

@@ -51,17 +51,17 @@ jobs:
             echo
             echo "### Install"
             echo
-            echo "**From source (recommended)** — clone the repo, open \`WhisperCaption.xcodeproj\` in Xcode, hit ⌘R. Your local build is signed under your own Apple ID; macOS opens it silently."
+            echo "**From source (recommended)** — clone the repo, open \`MeetAndNote.xcodeproj\` in Xcode, hit ⌘R. Your local build is signed under your own Apple ID; macOS opens it silently."
             echo
             echo "**Pre-built \`.dmg\`** — download below. On first launch macOS will block with _\"Apple could not verify…\"_. Click **Done**, then go to **System Settings → Privacy & Security**, scroll to the bottom, click **Open Anyway**, confirm with Touch ID / password. macOS remembers this forever. Full instructions are inside the \`.dmg\` as **Read me first.txt**."
             echo
             echo "### Verify the signature"
             echo
             echo '```sh'
-            echo "codesign -dvvv /Applications/WhisperCaption.app 2>&1 | grep '^Authority'"
+            echo "codesign -dvvv /Applications/MeetAndNote.app 2>&1 | grep '^Authority'"
             echo '```'
             echo
-            echo "Authority should read \`Apple Development: albond.dev@proton.me (...)\`. Anything else means the binary was re-signed downstream and should not be trusted."
+            echo "Authority should read \`Apple Development: TODO@example.com (...)\`. Anything else means the binary was re-signed downstream and should not be trusted."
           } > release-notes.md
 
           echo "---"
@@ -73,7 +73,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "${GITHUB_REF_NAME}" \
-            --title "WhisperCaption ${GITHUB_REF_NAME}" \
+            --title "MeetAndNote ${GITHUB_REF_NAME}" \
             --notes-file release-notes.md \
             --draft
 
@@ -85,6 +85,6 @@ jobs:
 
           Next steps (run locally):
             1. ./scripts/build-release.sh ${GITHUB_REF_NAME#v}
-            2. gh release upload ${GITHUB_REF_NAME} build/WhisperCaption-${GITHUB_REF_NAME#v}.dmg
+            2. gh release upload ${GITHUB_REF_NAME} build/MeetAndNote-${GITHUB_REF_NAME#v}.dmg
             3. gh release edit ${GITHUB_REF_NAME} --draft=false
           EOF

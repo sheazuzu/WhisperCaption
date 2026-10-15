@@ -1,4 +1,4 @@
-# Releasing WhisperCaption
+# Releasing MeetAndNote
 
 Cutting a new release is split across two surfaces — **GitHub Actions** creates the Release page with a changelog, and **your local Mac** builds and signs the `.dmg`. Signing happens locally on purpose: the brand Apple ID's developer certificate lives only in your local keychain and never touches CI.
 
@@ -13,7 +13,7 @@ git push origin v1.0.0
 ./scripts/build-release.sh 1.0.0
 
 # 3. Upload it to the draft release that GitHub Actions just created
-gh release upload v1.0.0 build/WhisperCaption-1.0.0.dmg
+gh release upload v1.0.0 build/MeetAndNote-1.0.0.dmg
 
 # 4. Publish
 gh release edit v1.0.0 --draft=false
@@ -24,13 +24,13 @@ gh release edit v1.0.0 --draft=false
 ### Pre-flight
 
 - [ ] All work for this version is merged to `main`.
-- [ ] [CI](https://github.com/albond/WhisperCaption/actions) is green on the head commit.
+- [ ] [CI](https://github.com/sheazuzu/WhisperCaption/actions) is green on the head commit.
 - [ ] Any machine-local notes or configs are ignored — sanity-check with `git status` (nothing personal in **Untracked files**) and `git check-ignore -v <path>` on each file you intentionally keep out of the repo.
-- [ ] `WhisperCaption/Local.xcconfig` has `DEVELOPMENT_TEAM` filled in. Sanity check:
+- [ ] `MeetAndNote/Local.xcconfig` has `DEVELOPMENT_TEAM` filled in. Sanity check:
   ```sh
-  grep DEVELOPMENT_TEAM WhisperCaption/Local.xcconfig
+  grep DEVELOPMENT_TEAM MeetAndNote/Local.xcconfig
   ```
-- [ ] Your login keychain has exactly one **`Apple Development: albond.dev@proton.me`** identity and nothing else for code signing:
+- [ ] Your login keychain has exactly one **`Apple Development: TODO@example.com`** identity and nothing else for code signing:
   ```sh
   security find-identity -v -p codesigning
   ```
@@ -56,15 +56,15 @@ The push triggers `.github/workflows/release.yml`, which creates a **draft** Git
 What this does:
 1. Archives a Release build (`xcodebuild archive`).
 2. Reads `DEVELOPMENT_TEAM` from `Local.xcconfig`, generates a temporary `ExportOptions.plist` in `build/` (never committed), exports a signed `.app`.
-3. Prints the codesign Authority chain so you can audit it before publishing — make sure the first Authority line says **`Apple Development: albond.dev@proton.me`** and nothing else.
-4. Packages the `.app` into `build/WhisperCaption-1.0.0.dmg` with a drag-to-Applications layout, prints the SHA-256.
+3. Prints the codesign Authority chain so you can audit it before publishing — make sure the first Authority line says **`Apple Development: TODO@example.com`** and nothing else.
+4. Packages the `.app` into `build/MeetAndNote-1.0.0.dmg` with a drag-to-Applications layout, prints the SHA-256.
 
 If the Authority line shows any other identity — **stop**. Don't upload the `.dmg`. Diagnose what your build setup picked up before continuing.
 
 ### 3. Upload the `.dmg` to the draft release
 
 ```sh
-gh release upload v1.0.0 build/WhisperCaption-1.0.0.dmg
+gh release upload v1.0.0 build/MeetAndNote-1.0.0.dmg
 ```
 
 If `gh` is not installed: `brew install gh && gh auth login`. Alternatively, drag-and-drop the `.dmg` onto the draft Release page in GitHub's web UI.
@@ -94,7 +94,7 @@ The reason signing stays off CI: the brand developer certificate's private key l
 
 ## Versioning policy
 
-WhisperCaption uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`):
+MeetAndNote uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PATCH`):
 
 | Bump | When |
 |-|-|
@@ -102,7 +102,7 @@ WhisperCaption uses [Semantic Versioning](https://semver.org/) (`MAJOR.MINOR.PAT
 | `MINOR` (`1.0.x` → `1.1.0`) | New features, settings, engines — backward-compatible for existing users |
 | `MAJOR` (`1.x.x` → `2.0.0`) | Breaking changes: removed settings, breaking changes to chat-history file format, etc. |
 
-`MARKETING_VERSION` is set by the build script via `xcodebuild MARKETING_VERSION=`, so what shows in **About → WhisperCaption** matches the tag.
+`MARKETING_VERSION` is set by the build script via `xcodebuild MARKETING_VERSION=`, so what shows in **About → MeetAndNote** matches the tag.
 
 ## Yanking a bad release
 

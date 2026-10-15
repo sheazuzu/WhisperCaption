@@ -26,9 +26,9 @@ jobs:
           swift --version
 
       - name: Provision Local.xcconfig (ad-hoc signing for CI)
-        working-directory: WhisperCaption
+        working-directory: MeetAndNote
         run: |
-          # The Xcode project references WhisperCaption/Local.xcconfig as a
+          # The Xcode project references MeetAndNote/Local.xcconfig as a
           # base configuration. That file is per-machine and gitignored;
           # contributors create theirs from the committed template. CI does
           # the same — copies the template, which has DEVELOPMENT_TEAM empty,
@@ -37,21 +37,21 @@ jobs:
           cat Local.xcconfig
 
       - name: Resolve SwiftPM dependencies
-        working-directory: WhisperCaption
+        working-directory: MeetAndNote
         run: |
           xcodebuild \
-            -project WhisperCaption.xcodeproj \
-            -scheme WhisperCaption \
+            -project MeetAndNote.xcodeproj \
+            -scheme MeetAndNote \
             -destination 'platform=macOS' \
             -resolvePackageDependencies
 
       - name: Build (ad-hoc signed)
-        working-directory: WhisperCaption
+        working-directory: MeetAndNote
         run: |
           set -o pipefail
           xcodebuild \
-            -project WhisperCaption.xcodeproj \
-            -scheme WhisperCaption \
+            -project MeetAndNote.xcodeproj \
+            -scheme MeetAndNote \
             -configuration Debug \
             -destination 'platform=macOS' \
             -derivedDataPath ../build/ci \
@@ -62,8 +62,8 @@ jobs:
             build 2>&1 | xcpretty || true
           # Re-run without xcpretty for accurate exit code
           xcodebuild \
-            -project WhisperCaption.xcodeproj \
-            -scheme WhisperCaption \
+            -project MeetAndNote.xcodeproj \
+            -scheme MeetAndNote \
             -configuration Debug \
             -destination 'platform=macOS' \
             -derivedDataPath ../build/ci \
@@ -74,19 +74,19 @@ jobs:
             build
 
       - name: Unit tests
-        working-directory: WhisperCaption
-        # Unit tests only — UI tests (`WhisperCaptionUITests`) launch the
+        working-directory: MeetAndNote
+        # Unit tests only — UI tests (`MeetAndNoteUITests`) launch the
         # real .app and need TCC permissions for Microphone / Screen
         # Recording that a fresh CI runner cannot grant, so they hang.
         # Run those locally before tagging a release.
         run: |
           xcodebuild \
-            -project WhisperCaption.xcodeproj \
-            -scheme WhisperCaption \
+            -project MeetAndNote.xcodeproj \
+            -scheme MeetAndNote \
             -configuration Debug \
             -destination 'platform=macOS' \
             -derivedDataPath ../build/ci \
-            -only-testing:WhisperCaptionTests \
+            -only-testing:MeetAndNoteTests \
             CODE_SIGN_IDENTITY="-" \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_ALLOWED=NO \

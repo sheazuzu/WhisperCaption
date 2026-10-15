@@ -6,7 +6,7 @@
 # a normal Mac app.
 #
 # IMPORTANT — the on-disk chat history folder (~/Library/Application
-# Support/WhisperCaption/) is tied to the app's bundle identifier, NOT
+# Support/MeetAndNote/) is tied to the app's bundle identifier, NOT
 # its file name. We rename the .app wrapper only; CFBundleIdentifier and
 # PRODUCT_NAME stay untouched, so your existing chats keep working.
 #
@@ -15,8 +15,8 @@
 #   ./scripts/install-local.sh <suffix>        # custom suffix
 #
 # Examples:
-#   ./scripts/install-local.sh                 # ⇒ /Applications/WhisperCaption-shea.app
-#   ./scripts/install-local.sh dev             # ⇒ /Applications/WhisperCaption-dev.app
+#   ./scripts/install-local.sh                 # ⇒ /Applications/MeetAndNote-shea.app
+#   ./scripts/install-local.sh dev             # ⇒ /Applications/MeetAndNote-dev.app
 
 set -euo pipefail
 
@@ -24,33 +24,38 @@ SUFFIX="${1:-shea}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-PROJECT="$ROOT/WhisperCaption/WhisperCaption.xcodeproj"
-SCHEME="WhisperCaption"
+PROJECT="$ROOT/MeetAndNote/MeetAndNote.xcodeproj"
+SCHEME="MeetAndNote"
 CONFIG="Release"
 
 BUILD_DIR="$ROOT/build-local"
 PRODUCT_DIR="$BUILD_DIR/Build/Products/$CONFIG"
-SRC_APP="$PRODUCT_DIR/WhisperCaption.app"
+SRC_APP="$PRODUCT_DIR/MeetAndNote.app"
 
-TARGET_NAME="WhisperCaption-${SUFFIX}.app"
+TARGET_NAME="MeetAndNote-${SUFFIX}.app"
 DEST_APP="/Applications/$TARGET_NAME"
 
-# Clean up the un-suffixed /Applications/WhisperCaption.app if it exists.
+# Clean up the un-suffixed /Applications/MeetAndNote.app if it exists.
 # It shares the same CFBundleIdentifier as the suffixed build, so TCC
 # (macOS privacy DB) sees two different cdhashes for the same bundle id
 # and gets confused — the user ends up granting Screen Recording to the
 # "wrong" row in System Settings and SCK keeps returning -3801. Moving
 # the stale copy to Trash removes the ambiguity.
-LEGACY_APP="/Applications/WhisperCaption.app"
+#
+# Note: pre-rebrand /Applications/WhisperCaption.app installs use a
+# different bundle id (albond.WhisperCaption vs. com.sheazuzu.MeetAndNote),
+# so they coexist fine with this one. If you want to remove them too,
+# delete them manually.
+LEGACY_APP="/Applications/MeetAndNote.app"
 if [[ -d "$LEGACY_APP" && "$DEST_APP" != "$LEGACY_APP" ]]; then
   echo "==> Found legacy install at $LEGACY_APP"
   echo "    (same bundle id as the suffixed build — causes TCC conflicts)"
   echo "    Moving it to Trash …"
   # Quit it first in case it's running.
-  osascript -e 'tell application "WhisperCaption" to quit' 2>/dev/null || true
+  osascript -e 'tell application "MeetAndNote" to quit' 2>/dev/null || true
   sleep 1
   # Use `mv` into ~/.Trash with a timestamp to avoid name collisions.
-  TRASH_NAME="WhisperCaption-legacy-$(date +%Y%m%d-%H%M%S).app"
+  TRASH_NAME="MeetAndNote-legacy-$(date +%Y%m%d-%H%M%S).app"
   mv "$LEGACY_APP" "$HOME/.Trash/$TRASH_NAME" 2>/dev/null || rm -rf "$LEGACY_APP"
   echo "    Done (moved to ~/.Trash/$TRASH_NAME)."
   echo
@@ -78,7 +83,7 @@ echo
 echo "==> Quitting any running copy of $TARGET_NAME …"
 osascript -e "tell application \"${TARGET_NAME%.app}\" to quit" 2>/dev/null || true
 # Also quit the vanilla name in case we're transitioning from an unsuffixed install.
-osascript -e 'tell application "WhisperCaption" to quit' 2>/dev/null || true
+osascript -e 'tell application "MeetAndNote" to quit' 2>/dev/null || true
 sleep 1
 
 echo "==> Installing to $DEST_APP …"
@@ -93,7 +98,7 @@ cp -R "$SRC_APP" "$DEST_APP"
 # that pin every rebuild gets a fresh cdhash and the user has to re-grant
 # Screen Recording / Microphone every time.
 echo "==> Re-signing (ad-hoc, stable identifier) …"
-BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$DEST_APP/Contents/Info.plist" 2>/dev/null || echo 'albond.WhisperCaption')"
+BUNDLE_ID="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleIdentifier' "$DEST_APP/Contents/Info.plist" 2>/dev/null || echo 'com.sheazuzu.MeetAndNote')"
 
 # Sign nested bundles first (frameworks + helper tools) — codesign refuses
 # to re-sign a container whose contents are unsigned/stale.

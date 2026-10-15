@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif" role="img" aria-label="WhisperCaption main window — live recording session with English captions on both sides and Spanish translation under the system-audio bubbles">
-  <title>WhisperCaption — main window demo (English captions, Spanish translation)</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1400 900" font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif" role="img" aria-label="MeetAndNote main window — live recording session with English captions on both sides and Spanish translation under the system-audio bubbles">
+  <title>MeetAndNote — main window demo (English captions, Spanish translation)</title>
 
   <defs>
     <!-- Desktop wallpaper hint -->
@@ -97,7 +97,7 @@
     <circle cx="20" cy="16" r="6" fill="#FF5F57" stroke="#E0443E" stroke-width="0.5"/>
     <circle cx="40" cy="16" r="6" fill="#FEBC2E" stroke="#D89E22" stroke-width="0.5"/>
     <circle cx="60" cy="16" r="6" fill="#28C840" stroke="#1AAD2D" stroke-width="0.5"/>
-    <text x="640" y="20" text-anchor="middle" font-size="12" font-weight="600" fill="#B9BAC4">WhisperCaption</text>
+    <text x="640" y="20" text-anchor="middle" font-size="12" font-weight="600" fill="#B9BAC4">MeetAndNote</text>
 
     <!-- ============= App header row ============= -->
     <g transform="translate(0,32)">
@@ -115,7 +115,7 @@
       </g>
 
       <!-- App title -->
-      <text x="86" y="51" font-size="20" font-weight="700" fill="#FFFFFF">WhisperCaption</text>
+      <text x="86" y="51" font-size="20" font-weight="700" fill="#FFFFFF">MeetAndNote</text>
 
       <!-- Session pill -->
       <g transform="translate(264,30)">

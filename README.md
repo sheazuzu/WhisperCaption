@@ -1,6 +1,6 @@
 <div align="center">
 
-# 🎙️ WhisperCaption
+# 🎙️ MeetAndNote
 
 **Live, dual-stream captions for macOS.**
 **Your microphone _and_ whatever your Mac is playing — transcribed side by side, in real time, on your machine.**
@@ -8,47 +8,47 @@
 <br />
 
 <!-- Identity -->
-[![License: MIT](https://img.shields.io/github/license/albond/WhisperCaption?color=blue&style=flat-square)](LICENSE)
+[![License: MIT](https://img.shields.io/github/license/sheazuzu/WhisperCaption?color=blue&style=flat-square)](LICENSE)
 [![macOS 15.0+](https://img.shields.io/badge/macOS-15.0%2B-000?logo=apple&logoColor=white&style=flat-square)](#requirements)
 [![Swift 5](https://img.shields.io/badge/Swift-5-F05138?logo=swift&logoColor=white&style=flat-square)](https://swift.org)
 [![SwiftUI + AppKit](https://img.shields.io/badge/SwiftUI-%2B%20AppKit-1F6FEB?style=flat-square)](https://developer.apple.com/documentation/swiftui)
-[![CI](https://github.com/albond/WhisperCaption/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/albond/WhisperCaption/actions/workflows/ci.yml)
-[![Latest release](https://img.shields.io/github/v/release/albond/WhisperCaption?include_prereleases&style=flat-square&color=blueviolet)](https://github.com/albond/WhisperCaption/releases)
+[![CI](https://github.com/sheazuzu/WhisperCaption/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/sheazuzu/WhisperCaption/actions/workflows/ci.yml)
+[![Latest release](https://img.shields.io/github/v/release/sheazuzu/WhisperCaption?include_prereleases&style=flat-square&color=blueviolet)](https://github.com/sheazuzu/WhisperCaption/releases)
 [![Privacy First](https://img.shields.io/badge/Privacy-First-2EA043?style=flat-square)](#privacy-the-whole-point)
 [![No telemetry](https://img.shields.io/badge/Telemetry-None-2EA043?style=flat-square)](#privacy-the-whole-point)
 
 <!-- Community -->
-[![GitHub stars](https://img.shields.io/github/stars/albond/WhisperCaption?style=flat-square)](https://github.com/albond/WhisperCaption/stargazers)
-[![GitHub forks](https://img.shields.io/github/forks/albond/WhisperCaption?style=flat-square)](https://github.com/albond/WhisperCaption/network/members)
-[![GitHub watchers](https://img.shields.io/github/watchers/albond/WhisperCaption?style=flat-square)](https://github.com/albond/WhisperCaption/watchers)
-[![GitHub contributors](https://img.shields.io/github/contributors/albond/WhisperCaption?style=flat-square)](https://github.com/albond/WhisperCaption/graphs/contributors)
+[![GitHub stars](https://img.shields.io/github/stars/sheazuzu/WhisperCaption?style=flat-square)](https://github.com/sheazuzu/WhisperCaption/stargazers)
+[![GitHub forks](https://img.shields.io/github/forks/sheazuzu/WhisperCaption?style=flat-square)](https://github.com/sheazuzu/WhisperCaption/network/members)
+[![GitHub watchers](https://img.shields.io/github/watchers/sheazuzu/WhisperCaption?style=flat-square)](https://github.com/sheazuzu/WhisperCaption/watchers)
+[![GitHub contributors](https://img.shields.io/github/contributors/sheazuzu/WhisperCaption?style=flat-square)](https://github.com/sheazuzu/WhisperCaption/graphs/contributors)
 
 <!-- Activity -->
-[![Last commit](https://img.shields.io/github/last-commit/albond/WhisperCaption?style=flat-square)](https://github.com/albond/WhisperCaption/commits)
-[![Commit activity](https://img.shields.io/github/commit-activity/m/albond/WhisperCaption?style=flat-square)](https://github.com/albond/WhisperCaption/pulse)
-[![Open issues](https://img.shields.io/github/issues/albond/WhisperCaption?style=flat-square)](https://github.com/albond/WhisperCaption/issues)
-[![Open pull requests](https://img.shields.io/github/issues-pr/albond/WhisperCaption?style=flat-square)](https://github.com/albond/WhisperCaption/pulls)
+[![Last commit](https://img.shields.io/github/last-commit/sheazuzu/WhisperCaption?style=flat-square)](https://github.com/sheazuzu/WhisperCaption/commits)
+[![Commit activity](https://img.shields.io/github/commit-activity/m/sheazuzu/WhisperCaption?style=flat-square)](https://github.com/sheazuzu/WhisperCaption/pulse)
+[![Open issues](https://img.shields.io/github/issues/sheazuzu/WhisperCaption?style=flat-square)](https://github.com/sheazuzu/WhisperCaption/issues)
+[![Open pull requests](https://img.shields.io/github/issues-pr/sheazuzu/WhisperCaption?style=flat-square)](https://github.com/sheazuzu/WhisperCaption/pulls)
 
 <!-- Repo -->
-[![Top language](https://img.shields.io/github/languages/top/albond/WhisperCaption?style=flat-square)](#)
-[![Code size](https://img.shields.io/github/languages/code-size/albond/WhisperCaption?style=flat-square)](#)
-[![Repo size](https://img.shields.io/github/repo-size/albond/WhisperCaption?style=flat-square)](#)
-[![Downloads](https://img.shields.io/github/downloads/albond/WhisperCaption/total?style=flat-square&label=downloads)](https://github.com/albond/WhisperCaption/releases)
+[![Top language](https://img.shields.io/github/languages/top/sheazuzu/WhisperCaption?style=flat-square)](#)
+[![Code size](https://img.shields.io/github/languages/code-size/sheazuzu/WhisperCaption?style=flat-square)](#)
+[![Repo size](https://img.shields.io/github/repo-size/sheazuzu/WhisperCaption?style=flat-square)](#)
+[![Downloads](https://img.shields.io/github/downloads/sheazuzu/WhisperCaption/total?style=flat-square&label=downloads)](https://github.com/sheazuzu/WhisperCaption/releases)
 
 <!-- Sponsor -->
 [![Donate ETH](https://img.shields.io/badge/Donate-USDC%20%E2%80%A2%20USDT%20%E2%80%A2%20EURC-7B3FE4?logo=ethereum&logoColor=white&style=flat-square)](#-support-the-project)
 
 <br />
 
-### ⭐ If WhisperCaption makes one of your calls easier, [star this repo](https://github.com/albond/WhisperCaption/stargazers) — it's free, it takes one click, and it's the single biggest "thank you" you can send a solo open-source maintainer. Prefer a tip? [Jump to the Tip Jar.](#-support-the-project)
+### ⭐ If MeetAndNote makes one of your calls easier, [star this repo](https://github.com/sheazuzu/WhisperCaption/stargazers) — it's free, it takes one click, and it's the single biggest "thank you" you can send a solo open-source maintainer. Prefer a tip? [Jump to the Tip Jar.](#-support-the-project)
 
 <br />
 
-[**Why?**](#why-whispercaption) · [**Features**](#-features) · [**Privacy**](#privacy-the-whole-point) · [**Engines**](#-three-engines-your-choice) · [**Languages**](#-language-support-by-engine) · [**Install**](#-get-started) · [**FAQ**](#-faq) · [**Star ⭐**](https://github.com/albond/WhisperCaption/stargazers) · [**Donate**](#-support-the-project)
+[**Why?**](#why-meetandnote) · [**Features**](#-features) · [**Privacy**](#privacy-the-whole-point) · [**Engines**](#-three-engines-your-choice) · [**Languages**](#-language-support-by-engine) · [**Install**](#-get-started) · [**FAQ**](#-faq) · [**Star ⭐**](https://github.com/sheazuzu/WhisperCaption/stargazers) · [**Donate**](#-support-the-project)
 
 <br />
 
-<img src="Docs/demo-main-hud.svg" alt="WhisperCaption demo — live English captions with Spanish translation under each system-side bubble" width="100%" />
+<img src="Docs/demo-main-hud.svg" alt="MeetAndNote demo — live English captions with Spanish translation under each system-side bubble" width="100%" />
 
 <sub><em>Demo dialogue · sample data, not a real conversation.</em></sub>
 
@@ -56,11 +56,11 @@
 
 ---
 
-## Why WhisperCaption
+## Why MeetAndNote
 
 Modern macOS is finally good at hearing **you** — system-wide dictation is a single shortcut away. What it still can't do well is hear the **other** side of your call, your YouTube tutorial, your foreign-language podcast, your colleague's heavily-accented standup — and put it next to your own voice as a live, two-column transcript that you can read, search, save, and translate.
 
-WhisperCaption is the small native app that does exactly that. It captures **two independent audio streams at the same time** — your microphone and whatever macOS is playing through its speakers — runs each through a transcription engine of your choice, and renders the result as a live chat: **you on one side, them on the other**.
+MeetAndNote is the small native app that does exactly that. It captures **two independent audio streams at the same time** — your microphone and whatever macOS is playing through its speakers — runs each through a transcription engine of your choice, and renders the result as a live chat: **you on one side, them on the other**.
 
 And because the only thing more sensitive than the words you say is the words you read on screen, it ships with a switch that makes the captions **completely invisible to screen recording and screen sharing**. You see them. Zoom doesn't. Meet doesn't. QuickTime doesn't. Your screenshots don't.
 
@@ -74,7 +74,7 @@ Three independent windows, one menu-bar status item, one settings registry. Each
 
 <div align="center">
 
-<img src="Docs/sketch-overview.svg" alt="WhisperCaption UI prototype sketch — menu bar entry, two-column Main HUD, bottom CC HUD strip, and the highlighted Hide-from-capture toggle in Settings" width="100%" />
+<img src="Docs/sketch-overview.svg" alt="MeetAndNote UI prototype sketch — menu bar entry, two-column Main HUD, bottom CC HUD strip, and the highlighted Hide-from-capture toggle in Settings" width="100%" />
 
 </div>
 
@@ -101,7 +101,7 @@ Microphone **and** system audio simultaneously, on independent pipelines. No vir
 <td valign="top">
 
 ### 🕶 Hide from screen capture
-One switch flips every WhisperCaption window's `NSWindow.sharingType` to `.none`. The captions stay visible to you on the glass — and disappear from Zoom, Meet, Teams, OBS, screen recordings, and screenshots taken by other apps. **Read your translation live during a call. Nobody else sees a thing.**
+One switch flips every MeetAndNote window's `NSWindow.sharingType` to `.none`. The captions stay visible to you on the glass — and disappear from Zoom, Meet, Teams, OBS, screen recordings, and screenshots taken by other apps. **Read your translation live during a call. Nobody else sees a thing.**
 
 </td>
 <td valign="top">
@@ -159,15 +159,15 @@ SwiftUI for the UI, AppKit + CoreAudio Process Tap for the heavy lifting. No Ele
 
 ## Privacy: the whole point
 
-WhisperCaption was built on the assumption that **the thing on your screen during a 1:1 with your manager is no one else's business**. That belief shows up in three concrete places:
+MeetAndNote was built on the assumption that **the thing on your screen during a 1:1 with your manager is no one else's business**. That belief shows up in three concrete places:
 
-- **The source is the binary.** There are no pre-built releases anywhere. To get WhisperCaption, you clone this repo and build it locally in Xcode. That means the binary running on your Mac was compiled from the code _you just read_, signed with _your own_ Apple ID — not somebody else's. There is literally no opportunity for a tampered build to reach you.
+- **The source is the binary.** There are no pre-built releases anywhere. To get MeetAndNote, you clone this repo and build it locally in Xcode. That means the binary running on your Mac was compiled from the code _you just read_, signed with _your own_ Apple ID — not somebody else's. There is literally no opportunity for a tampered build to reach you.
 - **Nothing leaves your Mac unless you choose to send it.** With WhisperKit selected, **zero bytes of audio leave the device**, ever — transcription happens entirely on the Neural Engine and CPU. If you opt into the cloud engines, your audio goes _only_ to the API endpoint of the provider whose key you typed in, over a direct WebSocket. No analytics SDK, no crash reporter, no telemetry pipe to any third party. Grep the source for `URL(` and see for yourself.
-- **No accounts, no signups, no maintainer-side knowledge of who you are.** There is no login, no email field, no opt-in newsletter. The maintainer (`albond`) literally cannot identify users of WhisperCaption — there is no backend that knows about them.
+- **No accounts, no signups, no maintainer-side knowledge of who you are.** There is no login, no email field, no opt-in newsletter. The maintainer (`sheazuzu`) literally cannot identify users of MeetAndNote — there is no backend that knows about them.
 
 And on top of all that, the **Hide from screen capture** switch makes the windows invisible to other apps' capture APIs — so even on calls where you don't trust the meeting platform, the foreign-language subtitle ticker isn't going to embarrass you.
 
-> Trust shouldn't be a feature. With WhisperCaption, you don't have to take anyone's word for it — the receipts are in the repo.
+> Trust shouldn't be a feature. With MeetAndNote, you don't have to take anyone's word for it — the receipts are in the repo.
 
 ---
 
@@ -181,7 +181,7 @@ And on top of all that, the **Hide from screen capture** switch makes the window
 
 Switch between engines in **Settings → Speech Recognition** at any time. Each engine's UI section only shows the fields it needs — model folder picker for WhisperKit, key field for the cloud engines.
 
-> **WhisperKit policy:** WhisperCaption does **not** auto-download model weights. You point Settings at a Whisper model folder you've downloaded yourself (e.g. via `huggingface-cli` or `git lfs`), and WhisperCaption only reads from it. This is a deliberate trust choice: the app never silently pulls multi-gigabyte binary blobs over the network.
+> **WhisperKit policy:** MeetAndNote does **not** auto-download model weights. You point Settings at a Whisper model folder you've downloaded yourself (e.g. via `huggingface-cli` or `git lfs`), and MeetAndNote only reads from it. This is a deliberate trust choice: the app never silently pulls multi-gigabyte binary blobs over the network.
 
 ---
 
@@ -218,7 +218,7 @@ bg · ca · cs · da · el · et · fi · hu · id · ko · lt · lv · ms · no
 sk · sv · ta · th · tr · uk · vi · zh
 ```
 
-> Heads-up: **Ukrainian (`uk`)** is monolingual-only on Nova-3. If you select `uk` together with another language, WhisperCaption falls back to monolingual `uk` and surfaces an inline warning in Settings — that's the closest match to what the API can deliver.
+> Heads-up: **Ukrainian (`uk`)** is monolingual-only on Nova-3. If you select `uk` together with another language, MeetAndNote falls back to monolingual `uk` and surfaces an inline warning in Settings — that's the closest match to what the API can deliver.
 
 ### ☁️ ElevenLabs Scribe v2 — 90+ languages, auto-detect
 
@@ -226,7 +226,7 @@ The full Whisper-class set, same codes as the WhisperKit list above. Pick one la
 
 ### Apple Translation (free, on-device) — separate from STT
 
-Translation is independent from the transcription engine you pick: any of the three STT engines feeds into Apple's built-in Translation framework for live, on-device translation of the system-audio side. **The available target languages are whatever your macOS version's Translation framework supports** (typically 20+ pairs as of macOS 15) — WhisperCaption queries the framework directly and shows you the live list, rather than hardcoding one.
+Translation is independent from the transcription engine you pick: any of the three STT engines feeds into Apple's built-in Translation framework for live, on-device translation of the system-audio side. **The available target languages are whatever your macOS version's Translation framework supports** (typically 20+ pairs as of macOS 15) — MeetAndNote queries the framework directly and shows you the live list, rather than hardcoding one.
 
 ---
 
@@ -242,13 +242,13 @@ Translation is independent from the transcription engine you pick: any of the th
 
 ### Option A — Install the pre-built `.dmg` (about a minute, with one Gatekeeper unlock)
 
-1. Download `WhisperCaption-X.Y.Z.dmg` from the [latest release](https://github.com/albond/WhisperCaption/releases/latest).
+1. Download `MeetAndNote-X.Y.Z.dmg` from the [latest release](https://github.com/sheazuzu/WhisperCaption/releases/latest).
 2. Open the `.dmg`. Read `Read me first.txt` in the window — it has the same steps you're reading now, with paths you can copy-paste.
-3. Drag **WhisperCaption** into **Applications**.
-4. **First-launch Gatekeeper unlock (one time only).** WhisperCaption is signed by a free Apple Personal Team rather than a paid `$99/year` Developer ID — the trade-off being no annual fee feeding back to Apple and no notarization metadata in Apple's logs. macOS Gatekeeper therefore blocks the very first launch:
-   1. Double-click `WhisperCaption.app` in Applications. macOS shows _"Apple could not verify "WhisperCaption.app" is free of malware..."_. Click **Done** (there is no "Open" button on this dialog in macOS 15+).
+3. Drag **MeetAndNote** into **Applications**.
+4. **First-launch Gatekeeper unlock (one time only).** MeetAndNote is signed by a free Apple Personal Team rather than a paid `$99/year` Developer ID — the trade-off being no annual fee feeding back to Apple and no notarization metadata in Apple's logs. macOS Gatekeeper therefore blocks the very first launch:
+   1. Double-click `MeetAndNote.app` in Applications. macOS shows _"Apple could not verify "MeetAndNote.app" is free of malware..."_. Click **Done** (there is no "Open" button on this dialog in macOS 15+).
    2. Open **System Settings → Privacy & Security**.
-   3. **Scroll all the way to the bottom.** You will see a line that reads _"WhisperCaption.app was blocked to protect your Mac."_
+   3. **Scroll all the way to the bottom.** You will see a line that reads _"MeetAndNote.app was blocked to protect your Mac."_
    4. Click **Open Anyway**.
    5. Confirm with Touch ID, Apple Watch, or your account password.
    6. The app launches. macOS remembers this choice forever — future double-clicks work like any other app.
@@ -260,30 +260,30 @@ If you'd rather not bypass Gatekeeper at all, build from source — see Option B
 Before granting the app Microphone / Screen Recording permissions, you can confirm the binary was signed by the same brand identity that publishes the source — i.e. the `.dmg` wasn't repackaged downstream:
 
 ```sh
-codesign -dvvv /Applications/WhisperCaption.app 2>&1 | grep '^Authority'
+codesign -dvvv /Applications/MeetAndNote.app 2>&1 | grep '^Authority'
 ```
 
 Expected output (first line is what matters):
 
 ```
-Authority=Apple Development: albond.dev@proton.me (...)
+Authority=Apple Development: TODO@example.com (...)
 Authority=Apple Worldwide Developer Relations Certification Authority
 Authority=Apple Root CA
 ```
 
-If the first line says **anything other than** `albond.dev@proton.me`, the binary was re-signed somewhere along the way — don't trust it, file an issue.
+If the first line says **anything other than** `TODO@example.com`, the binary was re-signed somewhere along the way — don't trust it, file an issue.
 
 ### Option B — Build it yourself in two minutes
 
 ```sh
-git clone https://github.com/albond/WhisperCaption.git
-cd WhisperCaption
-open WhisperCaption/WhisperCaption.xcodeproj
+git clone https://github.com/sheazuzu/WhisperCaption.git
+cd MeetAndNote
+open MeetAndNote/MeetAndNote.xcodeproj
 ```
 
 In Xcode:
-1. Select the **WhisperCaption** scheme.
-2. Optional: create `WhisperCaption/Local.xcconfig` from `Local.xcconfig.template` and fill in your Apple Developer Team ID for stable TCC permissions. Skip this and Xcode signs the build ad-hoc — the app still runs, you just re-grant Microphone + Screen Recording on every rebuild.
+1. Select the **MeetAndNote** scheme.
+2. Optional: create `MeetAndNote/Local.xcconfig` from `Local.xcconfig.template` and fill in your Apple Developer Team ID for stable TCC permissions. Skip this and Xcode signs the build ad-hoc — the app still runs, you just re-grant Microphone + Screen Recording on every rebuild.
 3. ⌘R. Grant **Microphone** and **Screen Recording** when macOS asks.
 
 The binary your local build produces is signed under **your own** Apple ID, not the maintainer's — Gatekeeper accepts it on your machine without any prompt.
@@ -302,7 +302,7 @@ For the cinema-style caption strip across the bottom of the screen, open **Setti
 
 ## ⌨️ Hotkeys, App Intents, Shortcuts
 
-Out of the box, WhisperCaption registers global hotkeys you can rebind in **Settings → Hotkeys**:
+Out of the box, MeetAndNote registers global hotkeys you can rebind in **Settings → Hotkeys**:
 
 | Action | Surface |
 |-|-|
@@ -317,20 +317,20 @@ Because everything important is an App Intent, you can wire any of it to a Strea
 
 ## ❓ FAQ
 
-**Why does my Mac say "Apple could not verify WhisperCaption.app is free of malware"?**
+**Why does my Mac say "Apple could not verify MeetAndNote.app is free of malware"?**
 Because the `.dmg` is signed by a free Apple Personal Team rather than a paid `$99/year` Developer ID + Apple notarization. Free Personal Team signing is enough for Gatekeeper to know _who_ signed the binary (you can audit it via `codesign -dvvv`) but it doesn't carry an Apple-issued notarization stamp — so macOS warns on the very first launch. To unlock: click **Done** on the warning, open **System Settings → Privacy & Security**, scroll to the bottom, click **Open Anyway**, confirm with Touch ID / password. macOS remembers this forever. The trade-off is deliberate: skipping the Developer Program means no $99 yearly fee to Apple and no notarization metadata in Apple's logs. The whole flow is also written inside the `.dmg` itself as **Read me first.txt** so you don't have to switch tabs.
 
 **Can I trust the published `.dmg`?**
-The published `.dmg` is signed by the same Apple ID (`albond.dev@proton.me`) that owns the GitHub repo and the brand. Run `codesign -dvvv /Applications/WhisperCaption.app | grep Authority` — the first Authority line must read `Apple Development: albond.dev@proton.me (...)`. If it doesn't, something between this repo and your `.dmg` re-signed the binary, and you shouldn't run it. If you want zero trust in the binary supply chain, [build from source](#option-b--build-it-yourself-in-two-minutes) — every commit goes through [CI](https://github.com/albond/WhisperCaption/actions) and you compile against code you can read in five minutes.
+The published `.dmg` is signed by the same Apple ID (`TODO@example.com`) that owns the GitHub repo and the brand. Run `codesign -dvvv /Applications/MeetAndNote.app | grep Authority` — the first Authority line must read `Apple Development: TODO@example.com (...)`. If it doesn't, something between this repo and your `.dmg` re-signed the binary, and you shouldn't run it. If you want zero trust in the binary supply chain, [build from source](#option-b--build-it-yourself-in-two-minutes) — every commit goes through [CI](https://github.com/sheazuzu/WhisperCaption/actions) and you compile against code you can read in five minutes.
 
 **Is the cloud engine cheaper than WhisperKit?**
 WhisperKit is free; cloud engines bill on usage and need an internet connection. For an hour-long meeting once a day, Nova-3 / Scribe v2 cost roughly the price of a coffee per month at the time of writing — but those numbers change. The point of supporting both is so you can switch in either direction without changing apps.
 
 **Does it work with FaceTime / Zoom / Meet / Teams / Discord / Slack Huddles?**
-Yes. WhisperCaption captures the **system audio output** — i.e. anything macOS is playing through its speakers or virtual output — not a specific app. Whatever the meeting client is, its audio goes through CoreAudio, and CoreAudio is what WhisperCaption taps.
+Yes. MeetAndNote captures the **system audio output** — i.e. anything macOS is playing through its speakers or virtual output — not a specific app. Whatever the meeting client is, its audio goes through CoreAudio, and CoreAudio is what MeetAndNote taps.
 
 **Why ask for Screen Recording permission?**
-The cleanest API for "tap the system-wide audio mix without changing devices" lives behind the same TCC entitlement as screen capture. WhisperCaption never reads pixels for transcription — only audio frames — but macOS gates them together. If you're curious, the relevant code is in `WhisperCaption/Capture/SystemCapture.swift`.
+The cleanest API for "tap the system-wide audio mix without changing devices" lives behind the same TCC entitlement as screen capture. MeetAndNote never reads pixels for transcription — only audio frames — but macOS gates them together. If you're curious, the relevant code is in `MeetAndNote/Capture/SystemCapture.swift`.
 
 **Does it support Windows / Linux?**
 No, and probably never will. It's intentionally a native macOS app — the dual-stream capture story works because of CoreAudio Process Tap, which is a macOS-only API. Cross-platform versions of "live captions" exist; this isn't one.
@@ -339,13 +339,13 @@ No, and probably never will. It's intentionally a native macOS app — the dual-
 No. It lives in your sandboxed Application Support directory in plain JSON — your other apps can't reach it without explicit Full Disk Access. You can delete a session from inside the app, or wipe the folder by hand. There's no cloud copy because there's no cloud anything.
 
 **I want to contribute / file a bug / suggest a feature.**
-[Open an issue](https://github.com/albond/WhisperCaption/issues) or a PR. Smaller bug fixes are easier to merge than sweeping refactors — please open an issue first if you want to change something architectural.
+[Open an issue](https://github.com/sheazuzu/WhisperCaption/issues) or a PR. Smaller bug fixes are easier to merge than sweeping refactors — please open an issue first if you want to change something architectural.
 
 ---
 
 ## 💝 Support the project
 
-WhisperCaption is free under the MIT licence and will stay that way. If it has saved you a coffee's worth of time, you can buy the maintainer one back — **directly to a wallet, with no third party in the middle**.
+MeetAndNote is free under the MIT licence and will stay that way. If it has saved you a coffee's worth of time, you can buy the maintainer one back — **directly to a wallet, with no third party in the middle**.
 
 Stablecoin tips go to a single EVM address that works on every EVM chain. The Tip Jar inside the app (**Settings → Tip Jar**) generates a wallet-deeplink QR code that pre-fills the recipient, the token contract, the chain ID, and (optionally) the amount, so any modern wallet (MetaMask, Trust Wallet, Rainbow, Coinbase Wallet, etc.) can pay with two taps.
 
@@ -372,7 +372,7 @@ If GitHub Sponsors is more your speed, star the repo — that's also a tip, in t
 
 <div align="center">
 
-<a href="https://github.com/albond/WhisperCaption/stargazers"><img src="Docs/demo-cc-hud.svg" alt="CC HUD demo — Star this repo, it costs nothing and takes one click, or send a tip from the Tip Jar below (Spanish translation underneath)" width="100%" /></a>
+<a href="https://github.com/sheazuzu/WhisperCaption/stargazers"><img src="Docs/demo-cc-hud.svg" alt="CC HUD demo — Star this repo, it costs nothing and takes one click, or send a tip from the Tip Jar below (Spanish translation underneath)" width="100%" /></a>
 
 <sub><em>↑ A live preview of the CC HUD subtitle strip, captioning its own pitch in real time. Click to star.</em></sub>
 
@@ -382,8 +382,8 @@ If GitHub Sponsors is more your speed, star the repo — that's also a tip, in t
 
 ## 📬 Contact
 
-- **Bugs / features:** [GitHub Issues](https://github.com/albond/WhisperCaption/issues)
-- **Anything else:** `albond.dev@proton.me`
+- **Bugs / features:** [GitHub Issues](https://github.com/sheazuzu/WhisperCaption/issues)
+- **Anything else:** `TODO@example.com`
 
 ---
 
@@ -397,6 +397,6 @@ Released under the [MIT License](LICENSE). Built on top of **WhisperKit** and **
 
 **Made for everyone who reads more languages than they speak.**
 
-⭐ Star the repo if WhisperCaption made one of your calls easier.
+⭐ Star the repo if MeetAndNote made one of your calls easier.
 
 </div>

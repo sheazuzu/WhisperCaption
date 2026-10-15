@@ -1,17 +1,17 @@
 #!/usr/bin/env bash
 #
 # 清理 macOS TCC（Transparency, Consent, and Control / 隐私数据库）里
-# 存放的 WhisperCaption 旧权限条目。
+# 存放的 MeetAndNote 旧权限条目。
 #
 # 为什么需要这个脚本？
 # -------------------------------------------------------------------
 # macOS 把"你同意过的权限"按 (bundle_id + cdhash) 的组合记录在 TCC 里。
 # 每次重新构建、重新签名 app，cdhash 都会变。于是「系统设置 → 隐私与安全
-# → 屏幕录制 / 麦克风」里虽然还勾着一条 WhisperCaption，但那条绑定的是
+# → 屏幕录制 / 麦克风」里虽然还勾着一条 MeetAndNote，但那条绑定的是
 # 旧 cdhash；新构建的 app 对不上，就表现为「我已经授权了，但是打开 app
 # 还让我去授权」的死循环。
 #
-# 这个脚本做的事情非常简单：把 TCC 里关于 albond.WhisperCaption 的
+# 这个脚本做的事情非常简单：把 TCC 里关于 com.sheazuzu.MeetAndNote 的
 # 所有历史条目一次性清掉。下次启动 app 时，macOS 会弹出全新的授权请求，
 # 新 cdhash 被记入 TCC，权限就能真正生效了。
 #
@@ -26,7 +26,7 @@
 
 set -euo pipefail
 
-BUNDLE_ID="albond.WhisperCaption"
+BUNDLE_ID="com.sheazuzu.MeetAndNote"
 
 echo "==> 正在清理 TCC 里关于 $BUNDLE_ID 的权限条目 …"
 echo
@@ -42,11 +42,11 @@ tccutil reset Microphone "$BUNDLE_ID" || true
 echo
 echo "==> 完成。接下来请手动做下面这些事："
 echo
-echo "    1. 彻底退出 WhisperCaption（⌘Q）"
+echo "    1. 彻底退出 MeetAndNote（⌘Q）"
 echo "    2. 重新从 Launchpad / Spotlight 启动 app"
 echo "    3. 点 Start，弹出的新权限对话框选【允许】"
 echo "    4. 如果系统提示需要重启 app 才能生效，照做"
 echo
-echo "小贴士：如果你同时装了多份不同后缀的 WhisperCaption-xxx.app，"
-echo "       它们共用同一个 bundle id (albond.WhisperCaption)，这次"
+echo "小贴士：如果你同时装了多份不同后缀的 MeetAndNote-xxx.app，"
+echo "       它们共用同一个 bundle id (com.sheazuzu.MeetAndNote)，这次"
 echo "       清理会影响到所有版本——重新授权一次即可。"

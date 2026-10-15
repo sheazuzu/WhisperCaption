@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Themed background image for the WhisperCaption DMG installer.
+Themed background image for the MeetAndNote DMG installer.
 
 Renders a PNG at 1:1 pixel-to-point — that's how Finder lays out icon-view
 backgrounds for mounted disk images. The image dimensions are therefore
@@ -278,7 +278,7 @@ def draw_content(img: Image.Image) -> None:
 
     # Drag hint — moved low enough to clear icon labels (~y=272) but high
     # enough to stay visible when Finder shows the bottom statusbar.
-    _text_center(img, "Drag WhisperCaption  →  Applications",
+    _text_center(img, "Drag MeetAndNote  →  Applications",
                  _font(11, "regular"), y=290, fill=(40, 60, 100, 215))
 
 

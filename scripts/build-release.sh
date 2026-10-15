@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Build a signed Release .dmg of WhisperCaption.
+# Build a signed Release .dmg of MeetAndNote.
 #
 # Usage:
 #   ./scripts/build-release.sh <version>
@@ -9,7 +9,7 @@
 #   ./scripts/build-release.sh 1.0.0
 #
 # Output:
-#   build/WhisperCaption-<version>.dmg
+#   build/MeetAndNote-<version>.dmg
 #
 # The script:
 #   1. archives a Release build
@@ -18,7 +18,7 @@
 #   4. packages the .app into a compressed .dmg
 #
 # Signing identity is whatever DEVELOPMENT_TEAM resolves to in
-# WhisperCaption/Local.xcconfig — that file is gitignored and machine-local.
+# MeetAndNote/Local.xcconfig — that file is gitignored and machine-local.
 
 set -euo pipefail
 
@@ -37,8 +37,8 @@ fi
 # ---- Paths ----
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT="$(cd "$SCRIPT_DIR/.." && pwd)"
-SCHEME="WhisperCaption"
-PROJECT="$ROOT/WhisperCaption/WhisperCaption.xcodeproj"
+SCHEME="MeetAndNote"
+PROJECT="$ROOT/MeetAndNote/MeetAndNote.xcodeproj"
 CONFIG="Release"
 
 BUILD_DIR="$ROOT/build"
@@ -46,12 +46,12 @@ ARCHIVE_PATH="$BUILD_DIR/$SCHEME.xcarchive"
 EXPORT_DIR="$BUILD_DIR/export"
 EXPORT_PLIST="$BUILD_DIR/ExportOptions.plist"
 APP_PATH="$EXPORT_DIR/$SCHEME.app"
-DMG_PATH="$BUILD_DIR/WhisperCaption-$VERSION.dmg"
+DMG_PATH="$BUILD_DIR/MeetAndNote-$VERSION.dmg"
 
 mkdir -p "$BUILD_DIR"
 
 # ---- Read DEVELOPMENT_TEAM from Local.xcconfig ----
-LOCAL_XCCONFIG="$ROOT/WhisperCaption/Local.xcconfig"
+LOCAL_XCCONFIG="$ROOT/MeetAndNote/Local.xcconfig"
 if [[ ! -f "$LOCAL_XCCONFIG" ]]; then
   echo "ERROR: $LOCAL_XCCONFIG not found. Copy Local.xcconfig.template and fill in your DEVELOPMENT_TEAM." >&2
   exit 1
@@ -132,7 +132,7 @@ codesign -dvvv "$APP_PATH" 2>&1 \
 echo "------------------------------------------------------------------------"
 echo
 echo "Review the Authority lines above. They must show the brand identity"
-echo "(albond.dev@proton.me) and NOT any personal Apple ID."
+echo "(TODO@example.com) and NOT any personal Apple ID."
 echo
 
 # ---- 5. Generate themed DMG background (graceful fallback if Pillow missing) ----
@@ -148,8 +148,8 @@ fi
 echo
 echo "==> [5/5] Packaging $DMG_PATH..."
 DMG_STAGING="$BUILD_DIR/dmg-staging"
-DMG_TEMP="$BUILD_DIR/WhisperCaption-temp.dmg"
-DMG_VOLNAME="WhisperCaption"
+DMG_TEMP="$BUILD_DIR/MeetAndNote-temp.dmg"
+DMG_VOLNAME="MeetAndNote"
 rm -rf "$DMG_STAGING" "$DMG_TEMP"
 mkdir -p "$DMG_STAGING"
 cp -R "$APP_PATH" "$DMG_STAGING/"
@@ -208,7 +208,7 @@ tell application "Finder"
     set text size of viewOptions to 12
     set background picture of viewOptions to file ".background:background.png"
     set position of item "Read me first.txt" of container window to {300, 75}
-    set position of item "WhisperCaption.app" of container window to {180, 205}
+    set position of item "MeetAndNote.app" of container window to {180, 205}
     set position of item "Applications" of container window to {420, 205}
     update without registering applications
     delay 2

@@ -1,5 +1,5 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 760" font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif" role="img" aria-label="WhisperCaption UI prototype sketch: menu bar entry point, two-column captions HUD, bottom-of-screen CC strip, and a Hide-from-capture toggle annotation">
-  <title>WhisperCaption UI prototype sketch</title>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1280 760" font-family="-apple-system, 'SF Pro Text', 'Helvetica Neue', Arial, sans-serif" role="img" aria-label="MeetAndNote UI prototype sketch: menu bar entry point, two-column captions HUD, bottom-of-screen CC strip, and a Hide-from-capture toggle annotation">
+  <title>MeetAndNote UI prototype sketch</title>
 
   <!-- Paper background -->
   <defs>
@@ -35,7 +35,7 @@
   <rect width="1280" height="760" fill="url(#grid)" opacity="0.55"/>
 
   <!-- Header title -->
-  <text x="64" y="62" font-size="28" font-weight="700" fill="#3B3528">WhisperCaption</text>
+  <text x="64" y="62" font-size="28" font-weight="700" fill="#3B3528">MeetAndNote</text>
   <text x="64" y="86" font-size="14" fill="#7A6C50" letter-spacing="2">UI PROTOTYPE · SKETCH</text>
   <line x1="64" y1="100" x2="220" y2="100" stroke="#B89B5E" stroke-width="2" stroke-linecap="round"/>
 
@@ -48,7 +48,7 @@
     <circle cx="70" cy="22" r="6" fill="#9CA0AC"/>
     <circle cx="94" cy="22" r="6" fill="#9CA0AC"/>
     <text x="120" y="27" font-size="13" fill="#C9CDD8">··· menu-bar items ···</text>
-    <!-- WhisperCaption icon -->
+    <!-- MeetAndNote icon -->
     <g transform="translate(312,8)">
       <rect width="56" height="28" rx="7" ry="7" fill="#2F2F36" stroke="#5B5F74" stroke-width="1"/>
       <text x="28" y="19" text-anchor="middle" font-size="13" font-weight="700" fill="#F5D866">CC</text>

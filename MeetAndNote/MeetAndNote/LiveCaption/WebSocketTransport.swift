@@ -60,6 +60,21 @@ nonisolated protocol WebSocketFactory: Sendable {
     /// `protocols` becomes `Sec-WebSocket-Protocol` in the upgrade
     /// handshake — Deepgram uses this for token auth.
     func open(url: URL, protocols: [String]) -> WebSocketTransport
+
+    /// Open a socket with custom HTTP headers in the upgrade request.
+    /// AssemblyAI uses `Authorization: <api_key>` here (plain key, not
+    /// Bearer). Keeping this separate from `protocols` means existing
+    /// Deepgram/ElevenLabs call sites don't need to change. Default
+    /// implementation routes through the protocols-only overload with
+    /// no headers so mock factories without header support still work.
+    func open(url: URL, headers: [String: String]) -> WebSocketTransport
+}
+
+extension WebSocketFactory {
+    func open(url: URL, headers: [String: String]) -> WebSocketTransport {
+        // Default fallback: drop headers. Real factories override this.
+        return open(url: url, protocols: [])
+    }
 }
 
 // MARK: - URLSession default implementations
@@ -79,6 +94,20 @@ nonisolated struct URLSessionWebSocketFactory: WebSocketFactory {
         } else {
             task = session.webSocketTask(with: url, protocols: protocols)
         }
+        task.resume()
+        return URLSessionWebSocketTransport(task: task)
+    }
+
+    func open(url: URL, headers: [String: String]) -> WebSocketTransport {
+        // URLSession's `webSocketTask(with: URLRequest)` honours custom
+        // headers in the upgrade handshake. `webSocketTask(with: URL, ...)`
+        // doesn't — the headers get stripped. So we route header-based
+        // auth through URLRequest.
+        var request = URLRequest(url: url)
+        for (name, value) in headers {
+            request.setValue(value, forHTTPHeaderField: name)
+        }
+        let task = session.webSocketTask(with: request)
         task.resume()
         return URLSessionWebSocketTransport(task: task)
     }

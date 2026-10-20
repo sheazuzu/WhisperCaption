@@ -83,6 +83,14 @@ final class CaptionStream {
     private var systemCaptionPump: Task<Void, Never>?
     private var elapsedTask: Task<Void, Never>?
     private var bubbleSilenceTask: Task<Void, Never>?
+    /// Polls each engine's `loadStateSnapshot()` every 500 ms while the
+    /// stream is running. If an engine transitions to `.failed(_)` after
+    /// `prepare()` has already succeeded (e.g. cloud WS keeps getting
+    /// kicked by the server because the API key lacks STT permission),
+    /// this surfaces the message as `state = .error(_)` so the HUD can
+    /// show the real reason instead of staying stuck on "Waiting for
+    /// audio" forever.
+    private var engineHealthTask: Task<Void, Never>?
 
     /// Timestamp (seconds since boot via `CACurrentMediaTime`) of the last
     /// system-audio sample whose RMS crossed `micDuckRMSThreshold`. Read
@@ -202,6 +210,8 @@ final class CaptionStream {
         let hint = settingsStore?.whisperVocabularyHint ?? ""
         let dgKey = settingsStore?.deepgramAPIKey ?? ""
         let elKey = settingsStore?.elevenLabsAPIKey ?? ""
+        let aaiKey = settingsStore?.assemblyAIAPIKey ?? ""
+        let sxKey = settingsStore?.sonioxAPIKey ?? ""
 
         let modelFolder: URL? = settingsStore?.whisperModelFolderURL
         let tokenizerFolder: URL? = settingsStore?.whisperTokenizerFolderURL
@@ -244,6 +254,10 @@ final class CaptionStream {
                 return DeepgramEngine(source: source, apiKey: dgKey, vocabularyHint: hint, settings: self.languages)
             case .elevenlabs:
                 return ElevenLabsEngine(source: source, apiKey: elKey, vocabularyHint: hint, settings: self.languages)
+            case .assemblyai:
+                return AssemblyAIEngine(source: source, apiKey: aaiKey, vocabularyHint: hint, settings: self.languages)
+            case .soniox:
+                return SonioxEngine(source: source, apiKey: sxKey, vocabularyHint: hint, settings: self.languages)
             }
         }
 
@@ -275,6 +289,8 @@ final class CaptionStream {
             case .whisper:    return "Loading \(model.displayName)…"
             case .deepgram:   return "Connecting to Deepgram…"
             case .elevenlabs: return "Connecting to ElevenLabs…"
+            case .assemblyai: return "Connecting to AssemblyAI…"
+            case .soniox:     return "Connecting to Soniox…"
             }
         }()
         state = .loadingModel(progress: 0, message: loadingMessage)
@@ -323,6 +339,7 @@ final class CaptionStream {
         }
 
         startPumps(mic: mic, system: system, micEngine: micEngine, systemEngine: systemEngine)
+        startEngineHealthMonitor(micEngine: micEngine, systemEngine: systemEngine)
 
         let now = Date()
         startedAt = now
@@ -338,6 +355,9 @@ final class CaptionStream {
 
         elapsedTask?.cancel()
         elapsedTask = nil
+
+        engineHealthTask?.cancel()
+        engineHealthTask = nil
 
         bubbleSilenceTask?.cancel()
         bubbleSilenceTask = nil
@@ -823,8 +843,59 @@ final class CaptionStream {
         if systemLevel < 0.0001 { systemLevel = 0 }
     }
 
+    /// Called from inside the pump tasks (mic/system) when a capture
+    /// hits a hard error. Previously this only logged — meaning the HUD
+    /// stayed in `.running` while audio silently stopped flowing. Now
+    /// it also surfaces the message to the UI state so the user sees
+    /// the actual cause (dead mic device, screen-recording revoked
+    /// mid-session, etc.).
     private func flagError(_ message: String) {
         log.error("\(message, privacy: .public)")
+        // Only overwrite state if we're actually running. If we're
+        // already stopping / stopped / errored, keep the earlier
+        // message (which is usually the more specific one).
+        if state.isRunning {
+            state = .error(message)
+        }
+    }
+
+    /// Starts a background task that watches each engine's load state.
+    /// If an engine moves to `.failed(_)` while we're `.running` (e.g.
+    /// a cloud WS keeps getting kicked and the reconnect loop gave up),
+    /// we surface the engine's error message to the HUD and tear down
+    /// so the user can act on it.
+    private func startEngineHealthMonitor(
+        micEngine: (any TranscriptionEngine)?,
+        systemEngine: any TranscriptionEngine
+    ) {
+        engineHealthTask?.cancel()
+        engineHealthTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: 500_000_000)
+                if Task.isCancelled { return }
+                guard let self else { return }
+                guard self.state.isRunning else { return }
+
+                if let micEngine {
+                    if case .failed(let m) = await micEngine.loadStateSnapshot() {
+                        await MainActor.run {
+                            guard self.state.isRunning else { return }
+                            self.state = .error(m)
+                        }
+                        await self.teardown()
+                        return
+                    }
+                }
+                if case .failed(let m) = await systemEngine.loadStateSnapshot() {
+                    await MainActor.run {
+                        guard self.state.isRunning else { return }
+                        self.state = .error(m)
+                    }
+                    await self.teardown()
+                    return
+                }
+            }
+        }
     }
 
     private func startElapsedTimer(from start: Date) {
@@ -840,6 +911,8 @@ final class CaptionStream {
     private func teardown() async {
         bubbleSilenceTask?.cancel()
         bubbleSilenceTask = nil
+        engineHealthTask?.cancel()
+        engineHealthTask = nil
         bubbleSplitter.resetAll()
         micCapture?.stop()
         await systemCapture?.stop()

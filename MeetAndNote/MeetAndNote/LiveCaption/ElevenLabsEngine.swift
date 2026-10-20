@@ -113,6 +113,30 @@ actor ElevenLabsEngine: TranscriptionEngine {
     /// death and the reconnect kicking in.
     private var lastSendErrorLogAt: Date?
 
+    /// Monotonic timestamp (via `CACurrentMediaTime`-equivalent `Date`)
+    /// of when the current WebSocket successfully handshook. Used by the
+    /// reconnect loop to detect "fast flap" — sockets that open and get
+    /// killed by the server within a couple of seconds. Those are not
+    /// network blips; they almost always mean the credentials or request
+    /// shape are rejected post-handshake (e.g. API key lacks STT scope,
+    /// account quota exceeded, workspace mismatch), and infinite
+    /// reconnects just hide the real error from the user. Nil whenever
+    /// we're not currently .connected.
+    private var connectedAt: Date?
+
+    /// Last recv/send/heartbeat error that moved us out of .connected.
+    /// Carried into the final `.failed(_)` message when we give up on
+    /// reconnects, so the user sees the actual failure cause (not just
+    /// "ElevenLabs rejected the connection").
+    private var lastDisconnectReason: String?
+
+    /// How many consecutive fast-flaps (open → die within 2s) we've
+    /// seen in the current reconnect loop. Reset on a healthy connect
+    /// (lived ≥ fastFlapThreshold seconds).
+    private var fastFlapCount: Int = 0
+    private static let fastFlapWindowSeconds: TimeInterval = 2.0
+    private static let fastFlapLimit: Int = 3
+
     init(
         source: CaptionSource,
         apiKey: String,
@@ -176,8 +200,12 @@ actor ElevenLabsEngine: TranscriptionEngine {
             // First connect failed but the error class is recoverable
             // (network, server hiccup). Don't surface as failed — kick
             // off the reconnect loop and let the user see captions appear
-            // as soon as the network returns.
+            // as soon as the network returns. The reconnect loop itself
+            // detects "fast flap" scenarios (WS keeps dying within 2s of
+            // open) and upgrades them to `.failed(_)` after a few tries
+            // so the user doesn't stare at a frozen HUD indefinitely.
             log.error("elevenlabs initial connect transient: \(message, privacy: .public); reconnecting…")
+            lastDisconnectReason = message
             loadState = .ready
             connState = .reconnecting
             startReconnectLoop()
@@ -203,6 +231,9 @@ actor ElevenLabsEngine: TranscriptionEngine {
         }
         task = nil
         pendingAudio.removeAll(keepingCapacity: false)
+        connectedAt = nil
+        lastDisconnectReason = nil
+        fastFlapCount = 0
         // ONLY place that closes the captions stream — receive errors
         // trigger reconnect, not stream termination.
         captionContinuation.finish()
@@ -274,6 +305,7 @@ actor ElevenLabsEngine: TranscriptionEngine {
 
         let newTask = webSocketFactory.open(url: url, protocols: [])
         self.task = newTask
+        self.connectedAt = Date()
 
         log.info("elevenlabs websocket opened: source=\(self.source.rawValue, privacy: .public) lang=\(langCode ?? "auto", privacy: .public) keyterms=\(keyterms.count) gen=\(myGen)")
 
@@ -324,8 +356,22 @@ actor ElevenLabsEngine: TranscriptionEngine {
                 return
             case .transient(let msg):
                 attempt += 1
+                lastDisconnectReason = msg
                 if attempt == 1 || attempt % 5 == 0 {
                     log.error("elevenlabs reconnect attempt \(attempt) failed: \(msg, privacy: .public)")
+                }
+                // Fast-flap detection: if we keep getting killed within
+                // ~2s of each successful handshake, the problem isn't the
+                // network — the server is actively rejecting us (missing
+                // scope, quota, workspace mismatch). Give up after a few
+                // tries and surface the actual recv error to the user.
+                if fastFlapCount >= Self.fastFlapLimit {
+                    let detail = lastDisconnectReason ?? msg
+                    let composed = "ElevenLabs kept closing the connection right after each handshake (\(fastFlapCount) fast disconnects). This usually means the API key is missing Speech-to-Text permission, the account quota is exhausted, or the workspace doesn't have Scribe v2 access. Server said: \(detail)"
+                    log.error("elevenlabs fast-flap limit reached: \(composed, privacy: .public)")
+                    loadState = .failed(composed)
+                    connState = .closed
+                    return
                 }
             }
         }
@@ -343,6 +389,19 @@ actor ElevenLabsEngine: TranscriptionEngine {
     private func triggerReconnect(reason: String) {
         guard connState == .connected else { return }
         log.error("elevenlabs disconnected: \(reason, privacy: .public); reconnecting…")
+        // Fast-flap bookkeeping: did the socket die within fastFlapWindowSeconds
+        // of handshake? If so, the server is actively rejecting us — bump
+        // the counter so the reconnect loop can give up after a few tries.
+        if let openedAt = connectedAt {
+            let liveFor = Date().timeIntervalSince(openedAt)
+            if liveFor < Self.fastFlapWindowSeconds {
+                fastFlapCount += 1
+            } else {
+                fastFlapCount = 0 // socket lived long enough; count reset
+            }
+        }
+        connectedAt = nil
+        lastDisconnectReason = reason
         connState = .reconnecting
         receiveLoop?.cancel()
         receiveLoop = nil
@@ -384,16 +443,44 @@ actor ElevenLabsEngine: TranscriptionEngine {
             guard let http = response as? HTTPURLResponse else {
                 return .failure(TokenError(message: "ElevenLabs returned a non-HTTP response.", fatal: false))
             }
+            // ElevenLabs returns rich JSON errors like
+            //   {"detail":{"status":"missing_permissions","message":"The API key you used is missing the permission user_read…"}}
+            // Surfacing that `message` verbatim is massively more useful
+            // than a bare "HTTP 401" because it tells the user exactly
+            // what to fix (regenerate key with correct scope, top up
+            // credits, switch workspace, etc.).
+            let serverDetail = Self.parseElevenLabsErrorDetail(data: data)
             if http.statusCode == 401 {
-                return .failure(TokenError(message: "ElevenLabs rejected the API key (HTTP 401). Open Settings → Speech Recognition and paste a fresh key from elevenlabs.io → API Keys.", fatal: true))
+                let detail = serverDetail ?? "the API key was rejected"
+                return .failure(TokenError(
+                    message: "ElevenLabs rejected the API key (HTTP 401): \(detail). Go to elevenlabs.io → API Keys and generate a new key that has Speech-to-Text permission, then paste it in Settings → Speech Recognition.",
+                    fatal: true
+                ))
             }
             if http.statusCode == 403 {
-                return .failure(TokenError(message: "ElevenLabs refused access (HTTP 403). Check key permissions / workspace.", fatal: true))
+                let detail = serverDetail ?? "permission denied"
+                return .failure(TokenError(
+                    message: "ElevenLabs refused access (HTTP 403): \(detail). Check that the API key's workspace has Scribe v2 Realtime enabled.",
+                    fatal: true
+                ))
+            }
+            if http.statusCode == 429 {
+                let detail = serverDetail ?? "rate limited"
+                return .failure(TokenError(
+                    message: "ElevenLabs rate-limited us (HTTP 429): \(detail). Wait a minute or upgrade your plan.",
+                    fatal: false
+                ))
             }
             if !(200..<300).contains(http.statusCode) {
-                let body = String(data: data, encoding: .utf8) ?? ""
-                // 5xx and other unknowns: treat as transient.
-                return .failure(TokenError(message: "ElevenLabs token endpoint HTTP \(http.statusCode): \(body.prefix(200))", fatal: false))
+                let detail = serverDetail ?? (String(data: data, encoding: .utf8).map { String($0.prefix(200)) } ?? "")
+                // 5xx and other unknowns: treat as transient (will retry
+                // with backoff). 4xx that isn't 401/403/429 we also
+                // retry — if it's structural the user will see it via
+                // the fast-flap detector after a few tries.
+                return .failure(TokenError(
+                    message: "ElevenLabs token endpoint HTTP \(http.statusCode): \(detail)",
+                    fatal: false
+                ))
             }
             let decoded = try JSONDecoder().decode(TokenResponse.self, from: data)
             guard let token = decoded.value, !token.isEmpty else {
@@ -404,6 +491,34 @@ actor ElevenLabsEngine: TranscriptionEngine {
         } catch {
             return .failure(TokenError(message: "Network error talking to ElevenLabs: \(error.localizedDescription)", fatal: false))
         }
+    }
+
+    /// Pulls the human-readable error message out of ElevenLabs's error
+    /// JSON. Their shape is `{"detail": {"status": "...", "message": "..."}}`
+    /// but sometimes `detail` is just a string, so handle both. Returns
+    /// nil when the body isn't the expected shape (don't fabricate a
+    /// detail — caller will fall back to the raw body prefix).
+    private nonisolated static func parseElevenLabsErrorDetail(data: Data) -> String? {
+        guard let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return nil
+        }
+        if let detailStr = obj["detail"] as? String {
+            return detailStr
+        }
+        if let detailObj = obj["detail"] as? [String: Any] {
+            let msg = detailObj["message"] as? String
+            let status = detailObj["status"] as? String
+            switch (msg, status) {
+            case let (m?, s?): return "\(m) [\(s)]"
+            case let (m?, nil): return m
+            case let (nil, s?): return s
+            default: return nil
+            }
+        }
+        if let msg = obj["message"] as? String {
+            return msg
+        }
+        return nil
     }
 
     // MARK: - Ingest

@@ -3,4 +3,4 @@
 // to use ad-hoc signing (Xcode "Sign to Run Locally") — TCC permissions will
 // re-prompt on every rebuild since each ad-hoc build has a fresh cdhash.
 
-DEVELOPMENT_TEAM =
+DEVELOPMENT_TEAM = 3DV28M8C86

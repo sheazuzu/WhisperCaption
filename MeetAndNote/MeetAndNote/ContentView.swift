@@ -1215,6 +1215,8 @@ private struct BottomBar: View {
         case .whisper:    return "\(settings.whisperModel.displayName.lowercased()) · on-device"
         case .deepgram:   return "Deepgram Nova-3 · cloud"
         case .elevenlabs: return "ElevenLabs Scribe v2 · cloud"
+        case .assemblyai: return "AssemblyAI Universal · cloud"
+        case .soniox:     return "Soniox stt-rt-preview · cloud"
         }
     }
 
@@ -1290,6 +1292,8 @@ private struct BottomBar: View {
         case .whisper:    return "cpu"
         case .deepgram:   return "cloud"
         case .elevenlabs: return "cloud"
+        case .assemblyai: return "cloud"
+        case .soniox:     return "cloud"
         }
     }
 

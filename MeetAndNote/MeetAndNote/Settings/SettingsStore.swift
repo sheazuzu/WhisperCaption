@@ -16,6 +16,8 @@ nonisolated enum TranscriptionEngineKind: String, Sendable, Codable, CaseIterabl
     case whisper
     case deepgram
     case elevenlabs
+    case assemblyai
+    case soniox
 
     var id: String { rawValue }
 
@@ -24,6 +26,8 @@ nonisolated enum TranscriptionEngineKind: String, Sendable, Codable, CaseIterabl
         case .whisper:    return "Local — WhisperKit"
         case .deepgram:   return "Cloud — Deepgram Nova-3"
         case .elevenlabs: return "Cloud — ElevenLabs Scribe v2"
+        case .assemblyai: return "Cloud — AssemblyAI Universal (English)"
+        case .soniox:     return "Cloud — Soniox stt-rt-preview"
         }
     }
 }
@@ -358,6 +362,22 @@ final class SettingsStore {
         }
     }
 
+    /// AssemblyAI API key. Passed verbatim in the WebSocket upgrade's
+    /// `Authorization` header (not Bearer). Stored in the Keychain.
+    var assemblyAIAPIKey: String {
+        didSet {
+            KeychainStore.write(assemblyAIAPIKey, account: Keys.assemblyAIAPIKey)
+        }
+    }
+
+    /// Soniox API key. Sent in the first JSON frame of the WebSocket
+    /// (Soniox-specific auth; no HTTP header). Stored in the Keychain.
+    var sonioxAPIKey: String {
+        didSet {
+            KeychainStore.write(sonioxAPIKey, account: Keys.sonioxAPIKey)
+        }
+    }
+
     // MARK: - Hotkeys
 
     /// Global shortcut for taking a screenshot. Unbound by default.
@@ -636,6 +656,8 @@ final class SettingsStore {
 
         self.deepgramAPIKey  = KeychainStore.read(account: Keys.deepgramAPIKey)
         self.elevenLabsAPIKey = KeychainStore.read(account: Keys.elevenLabsAPIKey)
+        self.assemblyAIAPIKey = KeychainStore.read(account: Keys.assemblyAIAPIKey)
+        self.sonioxAPIKey = KeychainStore.read(account: Keys.sonioxAPIKey)
 
         let storedEngine = defaults.string(forKey: Keys.transcriptionEngine) ?? ""
         self.transcriptionEngine = TranscriptionEngineKind(rawValue: storedEngine) ?? .whisper
@@ -755,6 +777,8 @@ final class SettingsStore {
         static let targetDisplayUUID        = "MeetAndNote.settings.targetDisplayUUID"
         static let deepgramAPIKey           = "deepgram-api-key"
         static let elevenLabsAPIKey         = "elevenlabs-api-key"
+        static let assemblyAIAPIKey         = "assemblyai-api-key"
+        static let sonioxAPIKey             = "soniox-api-key"
         static let transcriptionEngine      = "MeetAndNote.settings.transcriptionEngine"
         static let screenshotHotkey         = "MeetAndNote.settings.screenshotHotkey"
         static let mainHUDToggleHotkey      = "MeetAndNote.settings.mainHUDToggleHotkey"

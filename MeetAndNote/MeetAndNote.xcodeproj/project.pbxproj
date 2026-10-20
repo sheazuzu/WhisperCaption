@@ -11,14 +11,14 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		34062F6D2FB7291C00734835 /* PBXContainerItemProxy */ = {
+		38A6E1C0308640B400850168 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34062F682FB7291C00734835 /* Project object */;
 			proxyType = 1;
 			remoteGlobalIDString = 34062F6F2FB7291C00734835;
 			remoteInfo = MeetAndNote;
 		};
-		34062F6D2FB7291C00734835 /* PBXContainerItemProxy */ = {
+		38A6E1C1308640B400850168 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34062F682FB7291C00734835 /* Project object */;
 			proxyType = 1;
@@ -278,12 +278,12 @@
 		34062F7F2FB7291D00734835 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 34062F6F2FB7291C00734835 /* MeetAndNote */;
-			targetProxy = 34062F7E2FB7291D00734835 /* PBXContainerItemProxy */;
+			targetProxy = 38A6E1C1308640B400850168 /* PBXContainerItemProxy */;
 		};
 		34062F892FB7291D00734835 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 34062F6F2FB7291C00734835 /* MeetAndNote */;
-			targetProxy = 34062F882FB7291D00734835 /* PBXContainerItemProxy */;
+			targetProxy = 38A6E1C0308640B400850168 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -418,10 +418,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MeetAndNote.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = GH4UG5N8AY;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;
@@ -454,10 +456,12 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = MeetAndNote.entitlements;
+				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
+				DEVELOPMENT_TEAM = GH4UG5N8AY;
 				ENABLE_APP_SANDBOX = NO;
 				ENABLE_PREVIEWS = YES;
 				ENABLE_USER_SELECTED_FILES = readonly;

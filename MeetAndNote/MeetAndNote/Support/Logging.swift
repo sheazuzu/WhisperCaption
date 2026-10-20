@@ -14,6 +14,8 @@ nonisolated enum Log {
     static let WhisperEngine = Logger(subsystem: subsystem, category: "WhisperEngine")
     static let DeepgramEngine = Logger(subsystem: subsystem, category: "DeepgramEngine")
     static let ElevenLabsEngine = Logger(subsystem: subsystem, category: "ElevenLabsEngine")
+    static let AssemblyAIEngine = Logger(subsystem: subsystem, category: "AssemblyAIEngine")
+    static let SonioxEngine = Logger(subsystem: subsystem, category: "SonioxEngine")
     static let CaptionStream = Logger(subsystem: subsystem, category: "CaptionStream")
     static let HotkeyManager = Logger(subsystem: subsystem, category: "HotkeyManager")
     static let ScreenshotCapture = Logger(subsystem: subsystem, category: "ScreenshotCapture")

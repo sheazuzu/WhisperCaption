@@ -19,7 +19,7 @@ struct SpeechRecognitionSection: View {
 
             SettingsCard(
                 title: "Engine",
-                footer: "WhisperKit runs on-device (free, private). Deepgram Nova-3 streams to the cloud (<300 ms latency, multilingual). ElevenLabs Scribe v2 Realtime — 150 ms latency, 90+ languages. Changes apply on next Start."
+                footer: "WhisperKit runs on-device (free, private). Deepgram Nova-3 streams to the cloud (<300 ms latency, multilingual). ElevenLabs Scribe v2 Realtime — 150 ms latency, 90+ languages. AssemblyAI Universal-Streaming — ~$0.15/h, English only. Soniox stt-rt-preview — ~$0.17/h, 60+ languages with per-token language detection (strongest for mixed-language speech). Changes apply on next Start."
             ) {
                 HStack {
                     SettingsRowLabel(
@@ -62,6 +62,26 @@ struct SpeechRecognitionSection: View {
                 )
             }
 
+            if store.transcriptionEngine == .assemblyai {
+                APIKeyCard(
+                    title: "AssemblyAI",
+                    placeholder: "your API key…",
+                    footer: "Stored in your login keychain. Sent verbatim (NOT prefixed with `Bearer`) in the WebSocket upgrade's `Authorization` header against `wss://streaming.assemblyai.com/v3/ws`. Get one at assemblyai.com → Dashboard → API Keys. Pricing is $0.15/hour of streamed audio; the free tier includes limited credit. English-only — the engine will refuse non-English language selections.",
+                    keyBinding: $store.assemblyAIAPIKey,
+                    missingMessage: "AssemblyAI key not set — engine won't start."
+                )
+            }
+
+            if store.transcriptionEngine == .soniox {
+                APIKeyCard(
+                    title: "Soniox",
+                    placeholder: "your API key…",
+                    footer: "Stored in your login keychain. Sent inside the first JSON frame of the WebSocket to `wss://stt-rt.soniox.com/transcribe-websocket` (Soniox-specific — no HTTP header). Get one at console.soniox.com → API Keys. Pricing is $0.17/hour of streamed audio. 60+ languages with per-token auto-detection — excellent for Chinese/English code-switching.",
+                    keyBinding: $store.sonioxAPIKey,
+                    missingMessage: "Soniox key not set — engine won't start."
+                )
+            }
+
             LanguageCard(stream: stream, engine: store.transcriptionEngine)
 
             VocabularyHintCard()
@@ -76,6 +96,8 @@ struct SpeechRecognitionSection: View {
         case .whisper:    return "Local model — no network, no cost."
         case .deepgram:   return "Cloud streaming — requires an API key."
         case .elevenlabs: return "Cloud streaming — requires an API key."
+        case .assemblyai: return "Cloud streaming (English only) — requires an API key."
+        case .soniox:     return "Cloud streaming (60+ languages, auto-detect) — requires an API key."
         }
     }
 }
@@ -205,6 +227,8 @@ private struct LanguageCard: View {
         case .whisper:    return WhisperEngine.supportedLanguages
         case .deepgram:   return DeepgramEngine.supportedLanguages
         case .elevenlabs: return ElevenLabsEngine.supportedLanguages
+        case .assemblyai: return AssemblyAIEngine.supportedLanguages
+        case .soniox:     return SonioxEngine.supportedLanguages
         }
     }
 
